@@ -1,0 +1,17 @@
+.App {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.container {
+  margin-top: 80px;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.navbar-container {
+  margin: auto;
+  font-size: large;
+  display: flex;
+  position: fixed;
+}

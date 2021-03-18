@@ -1,0 +1,50 @@
+[debug] [2020-08-11T08:57:15.173Z] ----------------------------------------------------------------------
+[debug] [2020-08-11T08:57:15.176Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\Windows 10\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js init
+[debug] [2020-08-11T08:57:15.176Z] CLI Version:   7.11.0
+[debug] [2020-08-11T08:57:15.176Z] Platform:      win32
+[debug] [2020-08-11T08:57:15.176Z] Node Version:  v13.2.0
+[debug] [2020-08-11T08:57:15.177Z] Time:          Tue Aug 11 2020 15:57:15 GMT+0700 (Indochina Time)
+[debug] [2020-08-11T08:57:15.177Z] ----------------------------------------------------------------------
+[debug] [2020-08-11T08:57:15.177Z] 
+[debug] [2020-08-11T08:57:15.184Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2020-08-11T08:57:15.184Z] > authorizing via signed-in user
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  C:\PROJECT\test next.js\newnext
+
+Before we get started, keep in mind:
+
+  * You are currently outside your home directory
+
+[debug] [2020-08-11T09:02:29.739Z] ----------------------------------------------------------------------
+[debug] [2020-08-11T09:02:29.742Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\Windows 10\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js init
+[debug] [2020-08-11T09:02:29.742Z] CLI Version:   7.11.0
+[debug] [2020-08-11T09:02:29.742Z] Platform:      win32
+[debug] [2020-08-11T09:02:29.742Z] Node Version:  v13.2.0
+[debug] [2020-08-11T09:02:29.753Z] Time:          Tue Aug 11 2020 16:02:29 GMT+0700 (Indochina Time)
+[debug] [2020-08-11T09:02:29.754Z] ----------------------------------------------------------------------
+[debug] [2020-08-11T09:02:29.754Z] 
+[debug] [2020-08-11T09:02:29.762Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2020-08-11T09:02:29.762Z] > authorizing via signed-in user
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  C:\PROJECT\test next.js\newnext
+
+Before we get started, keep in mind:
+
+  * You are currently outside your home directory
+
