@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import db from "../firebase/firebase.js";
+import db from "../database/firebase.js";
 import Addherb from "./addherb";
 import Link from "next/link";
-import { auth } from "../firebase/firebase";
+import { auth } from "../database/firebase";
 
 function Home() {
   const [herbs, setHerbs] = useState([]);

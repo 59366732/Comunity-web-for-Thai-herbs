@@ -1,4 +1,6 @@
-import * as firebase from "firebase/app";
+// const firebase = require('firebase/app'); // for CommonJs modules
+// import * as firebase from "firebase/app"; //for TypeScript
+import firebase from "firebase/app" //for ES modules
 import "firebase/auth";
 import "firebase/firestore";
 import "firebase/storage";

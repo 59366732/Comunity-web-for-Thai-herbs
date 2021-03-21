@@ -1,5 +1,5 @@
 import React, { useEffect, useState, createContext } from "react";
-import db, { auth, generateActivity } from "../firebase/firebase";
+import db, { auth, generateActivity } from "../database/firebase";
 
 export const ActivityContext = createContext();
 

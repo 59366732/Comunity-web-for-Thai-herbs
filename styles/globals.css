@@ -27,7 +27,7 @@ a {
 }
 
 .navbar-container {
-  margin: auto;
+  margin: flex-start;
   font-size: large;
   display: flex;
   position: fixed;
