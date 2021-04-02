@@ -106,7 +106,7 @@ function Addherb() {
 	const [uploadNoti, setUploadNoti] = useState(null);
 
 	const router = useRouter();
-	const user = auth.currentUser;
+	const { user, setUser } = useContext(UserContext);
 
 	//herb form
 	const [thaiName, setThaiName] = useState("");
@@ -154,29 +154,55 @@ function Addherb() {
 		</span>
 	);
 
+	const pushToHistory = async (herb_id) => {
+		const data = await db.collection("herbs").doc(herb_id).get();
+
+		db.collection("herbs").doc(herb_id).collection("historys").add({
+			herb_id: data.id,
+			userDisplayName: data.data().userDisplayName,
+			thaiName: data.data().thaiName,
+			engName: data.data().engName,
+			sciName: data.data().sciName,
+			familyName: data.data().familyName,
+			info: data.data().info,
+			attribute: data.data().attribute,
+			timestamp: data.data().timestamp,
+			imgUrl: data.data().imgUrl,
+			NMRUrl: data.data().NMRUrl,
+			chemBondUrl: data.data().chemBondUrl,
+			status: data.data().status,
+			voteCount: data.data().voteCount,
+		});
+	};
+
 	const handleSubmit = (e) => {
 		e.preventDefault();
 
 		if (thaiName && info) {
-			db.collection("herbs").add({
-				userDisplayName: user.displayName,
-				thaiName: thaiName,
-				engName: engName,
-				sciName: sciName,
-				familyName: familyName,
-				info: info,
-				attribute: attribute,
-				date: firebase.firestore.FieldValue.serverTimestamp(),
-				timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-				imgUrl: imgUrl,
-				NMRUrl: NMRUrl,
-				chemBondUrl: chemBondUrl,
-			});
+			db.collection("herbs")
+				.add({
+					userDisplayName: user.displayName,
+					thaiName: thaiName,
+					engName: engName,
+					sciName: sciName,
+					familyName: familyName,
+					info: info,
+					attribute: attribute,
+					timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+					imgUrl: imgUrl,
+					NMRUrl: NMRUrl,
+					chemBondUrl: chemBondUrl,
+					status: "ยังไม่ได้ยืนยัน",
+					voteCount: 0,
+				})
+				.then((result) => {
+					pushToHistory(result.id);
+				});
 		} else {
 			setError(info_alert);
 			setTimeout(() => {
 				setError(null);
-			}, 2000);
+			}, 3000);
 			return null;
 		}
 

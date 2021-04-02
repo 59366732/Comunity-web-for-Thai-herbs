@@ -253,12 +253,12 @@ export const getServerSideProps = async ({ query }) => {
 				content["familyName"] = result.data().familyName;
 				content["info"] = result.data().info;
 				content["attribute"] = result.data().attribute;
-				content["date"] = new Date(
-					result.data().timestamp.seconds * 1000
-				).toDateString();
 				content["timestamp"] = new Date(
 					result.data().timestamp.seconds * 1000
 				).toLocaleTimeString();
+				content["date"] = new Date(
+					result.data().timestamp.seconds * 1000
+				).toDateString();
 				content["imgUrl"] = result.data().imgUrl;
 				content["chemBondUrl"] = result.data().chemBondUrl;
 				content["NMRUrl"] = result.data().NMRUrl;
@@ -289,31 +289,34 @@ export const getServerSideProps = async ({ query }) => {
 		},
 	};
 };
-// console.log(timestamp)
+
 const Blog = (props) => {
 	const classes = useStyles();
 	const [openDelete, setOpenDelete] = React.useState(false);
+	const [openCancel, setOpenCancel] = React.useState(false);
+
 	const handleClickOpenDelete = () => {
-		setOpen(true);
+		setOpenDelete(true);
 	};
 
 	const handleCloseDelete = () => {
-		setOpen(false);
+		setOpenDelete(false);
 	};
-	const [openCancel, setOpenCancel] = React.useState(false);
 	const handleClickOpenCancel = () => {
-		setOpen(true);
+		setOpenCancel(true);
 	};
 
 	const handleCloseCancel = () => {
-		setOpen(false);
+		setOpenCancel(false);
 	};
 
 	dayjs.extend(relativeTime);
-	const date = props.date;
-	const time = props.timestamp;
+	// const d = new Date(props.timestamp);
+	const d = props.timestamp;
+	// console.log(dd);
+	const date = props.timestamp;
+	// const time = props.timestamp;
 	const router = useRouter();
-
 	const { user, setUser } = useContext(UserContext);
 
 	const [activeEdit, setActiveEdit] = useState(false);
@@ -341,7 +344,7 @@ const Blog = (props) => {
 	//NMR
 	const [NMR, setNMR] = useState(null);
 	const [NMRUrl, setNMRUrl] = useState(props.NMRUrl); //props.NMRUrl
-	const [newNMRUrl, setnewNMRUrl] = useState("");
+	const [newNMRUrl, setNewNMRUrl] = useState("");
 
 	const select_img_alert = (
 		<span>
@@ -387,7 +390,6 @@ const Blog = (props) => {
 				familyName: familyNameEdit,
 				info: infoEdit,
 				attribute: attributeEdit,
-				date: firebase.firestore.FieldValue.serverTimestamp(),
 				timestamp: firebase.firestore.FieldValue.serverTimestamp(),
 				imgUrl: newImgUrl,
 				NMRUrl: newNMRUrl,
@@ -395,7 +397,6 @@ const Blog = (props) => {
 				status: "ยังไม่ได้ยืนยัน",
 				voteCount: 0,
 			})
-			// @ts-ignore
 			.then(setActiveEdit(false));
 	};
 
@@ -427,7 +428,6 @@ const Blog = (props) => {
 		db.collection("herbs")
 			.doc(props.main_id)
 			.delete()
-			// @ts-ignore
 			.then(setActiveEdit(false), router.push("/"));
 	};
 
@@ -546,13 +546,13 @@ const Blog = (props) => {
 					</DialogTitle>
 					<DialogContent>
 						<DialogContentText>
-							คุณต้องการลบข้อมูลสมุนไพรนี้ใช่หรือไม่?
+							คุณต้องการ<a style={{color: "red"}}>ลบ</a>ข้อมูลสมุนไพรนี้ใช่หรือไม่?
 							คลิก(ใช่)เพื่อลบข้อมูลสมุนไพรออกจากฐานข้อมูล
 							หรือคลิก(ไม่ใช่)เพื่อยกเลิกการลบ.
 						</DialogContentText>
 					</DialogContent>
 					<DialogActions>
-						<Button autoFocus onClick={handleClose} color="default">
+						<Button autoFocus onClick={handleCloseDelete} color="default">
 							<Typography>ไม่ใช่</Typography>
 						</Button>
 						<Button onClick={handleDelete} color="primary">
@@ -580,13 +580,13 @@ const Blog = (props) => {
 					</DialogTitle>
 					<DialogContent>
 						<DialogContentText>
-							คุณต้องการยกเลิกการแก้ไขข้อมูลสมุนไพรนี้ใช่หรือไม่?
+							คุณต้องการ<a style={{color: "red"}}>ยกเลิก</a>การแก้ไขข้อมูลสมุนไพรนี้ใช่หรือไม่?
 							คลิก(ใช่)เพื่อกลับสู่หน้าข้อมูลสมุนไพร
 							หรือคลิก(ไม่ใช่)เพื่อดำเนินการแก้ไขต่อ.
 						</DialogContentText>
 					</DialogContent>
 					<DialogActions>
-						<Button autoFocus onClick={handleClose} color="default">
+						<Button autoFocus onClick={handleCloseCancel} color="default">
 							<Typography>ไม่ใช่</Typography>
 						</Button>
 						<Button onClick={handleCancel} color="primary">
@@ -622,7 +622,6 @@ const Blog = (props) => {
 															<Typography className={classes.userName}>
 																{props.userDisplayName}
 															</Typography>
-															{/* <Chip variant="outlined" color="primary" icon={<FaceIcon />} /> */}
 														</CardActionArea>
 													</Card>
 												</Grid>
@@ -738,10 +737,11 @@ const Blog = (props) => {
 												</Typography>
 												<Grid item xs={12} sm={6} md={3}>
 													<img
-														width="auto"
-														height="auto"
+														width="100%!important"
+														height="100%!important"
+														objectfit="contain"
 														src={ImgUrl || "http://via.placeholder.com/200"}
-														alt="firebase-image"
+														alt=""
 													/>
 												</Grid>
 											</CardContent>
@@ -758,12 +758,13 @@ const Blog = (props) => {
 												</Typography>
 												<Grid item xs={12} sm={6} md={3}>
 													<img
-														width="auto"
-														height="auto"
+														width="1080px!important"
+														height="auto!important"
+														objectfit="contain"
 														src={
 															chemBondUrl || "http://via.placeholder.com/200"
 														}
-														alt="firebase-image"
+														alt=""
 													/>
 												</Grid>
 											</CardContent>
@@ -777,10 +778,11 @@ const Blog = (props) => {
 												</Typography>
 												<Grid item xs={12} sm={6} md={3}>
 													<img
-														width="auto"
-														height="auto"
+														width="1080px!important"
+														height="autopx!important"
+														objectfit="contain"
 														src={NMRUrl || "http://via.placeholder.com/200"}
-														alt="firebase-image"
+														alt=""
 													/>
 												</Grid>
 											</CardContent>
@@ -793,7 +795,7 @@ const Blog = (props) => {
 													<Typography
 														style={{ fontWeight: "bold", float: "left" }}
 													>
-														เมื่อวันที่:&nbsp;
+														เมื่อ:&nbsp;
 													</Typography>
 													<Typography
 														style={{
@@ -803,7 +805,7 @@ const Blog = (props) => {
 															float: "left",
 														}}
 													>
-														{date}
+														{props.date}
 													</Typography>
 													<Typography
 														style={{
@@ -821,7 +823,7 @@ const Blog = (props) => {
 															float: "left",
 														}}
 													>
-														{time}
+														{props.timestamp}
 													</Typography>
 												</Grid>
 											</Grid>
@@ -889,7 +891,7 @@ const Blog = (props) => {
 											ชื่อภาษาไทย:
 										</Typography>
 										<TextField
-											fullwidth
+											fullWidth
 											id="outlined-multiline-flexible"
 											variant="outlined"
 											color="primary"
@@ -905,7 +907,7 @@ const Blog = (props) => {
 											ชื่อภาษาอังกฤษ:
 										</Typography>
 										<TextField
-											fullwidth
+											fullWidth
 											id="outlined-multiline-flexible"
 											id="filled-multiline-static"
 											variant="outlined"
@@ -922,7 +924,7 @@ const Blog = (props) => {
 											ชื่อทางวิทยาศาสตร์:
 										</Typography>
 										<TextField
-											fullwidth
+											fullWidth
 											id="outlined-multiline-flexible"
 											id="filled-multiline-static"
 											variant="outlined"
@@ -939,7 +941,7 @@ const Blog = (props) => {
 											ชื่อวงศ์:
 										</Typography>
 										<TextField
-											fullwidth
+											fullWidth
 											id="outlined-multiline-flexible"
 											variant="outlined"
 											color="primary"
@@ -955,13 +957,13 @@ const Blog = (props) => {
 											ข้อมูลสมุนไพร:
 										</Typography>
 										<TextField
-											fullwidth
+											fullWidth
 											multiline
 											id="filled-multiline-static"
 											variant="outlined"
 											color="primary"
 											fontFamily="sans-serif"
-											rowsMin={10}
+											rowsmin={10}
 											value={infoEdit}
 											onChange={(e) => setInfoEdit(e.target.value)}
 											placeholder="ข้อมูลสมุนไพร ?"
@@ -973,13 +975,13 @@ const Blog = (props) => {
 											สรรพคุณของสมุนไพร:
 										</Typography>
 										<TextField
-											fullwidth
+											fullWidth
 											multiline
 											id="filled-multiline-static"
 											variant="outlined"
 											color="primary"
 											fontFamily="sans-serif"
-											rowsMin={10}
+											rowsmin={10}
 											value={attributeEdit}
 											onChange={(e) => setAttributeEdit(e.target.value)}
 											placeholder="สรรพคุณของสมุนไพร ?"
@@ -1097,7 +1099,6 @@ const Blog = (props) => {
 											className={classes.savechangeButton}
 											onClick={handleUpdate}
 											type="submit"
-											// variant="contained"
 											color="primary"
 											startIcon={<SaveIcon />}
 										>
@@ -1106,9 +1107,8 @@ const Blog = (props) => {
 
 										<Button
 											className={classes.deleteButton}
-											onClick={handleClickOpen}
+											onClick={handleClickOpenDelete}
 											type="submit"
-											// variant="contained"
 											color="secondary"
 											startIcon={<DeleteForeverIcon />}
 										>
@@ -1117,7 +1117,7 @@ const Blog = (props) => {
 										<ConfirmDelete />
 										<Button
 											className={classes.cancelButton}
-											onClick={handleClickOpen}
+											onClick={handleClickOpenCancel}
 											type="submit"
 											position="relative"
 											color="default"

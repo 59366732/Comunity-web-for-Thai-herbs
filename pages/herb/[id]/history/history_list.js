@@ -330,7 +330,7 @@ const history = (props) => {
 															className="txt"
 															style={{ color: "#007FFF", display: "inline" }}
 														>
-															{limitContent(history.thaiName, 20)}
+															{limitContent(history.thaiName, 30)}
 														</Typography>
 														<Typography style={{ display: "inline" }}>
 															&nbsp;ถูกแก้ไขเมื่อ&nbsp;

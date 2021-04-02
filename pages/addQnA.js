@@ -1,5 +1,10 @@
 import React from "react";
 import { useContext, useState, useEffect } from "react";
+import { UserContext } from "../providers/UserProvider";
+import db, { auth } from "../database/firebase.js";
+import firebase from "firebase";
+import { useRouter } from "next/router";
+
 import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
@@ -17,7 +22,6 @@ import SaveIcon from "@material-ui/icons/Save";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
 import { useTheme } from "@material-ui/core/styles";
-import ConfirmCancel from "../component/canceladdquestion";
 import {
 	Grid,
 	AppBar,
@@ -248,11 +252,45 @@ function PaperComponent(props) {
 	);
 }
 
-export default function AddQuesion() {
+const AddQuestion = () => {
 	const classes = useStyles();
 	const theme = useTheme();
+
+	const { user, setUser } = useContext(UserContext);
+	const [loggedIn, setLoggedIn] = useState(false);
+
+	const router = useRouter();
+
+	//input
+	const [title, setTitle] = useState("");
+	const [detail, setDetail] = useState("");
+
+	auth.onAuthStateChanged((user) => {
+		if (user) {
+			setLoggedIn(true);
+		} else {
+			setLoggedIn(false);
+		}
+	});
+
+	const handleSubmit = (e) => {
+		e.preventDefault();
+
+		db.collection("QnA").add({
+			userDisplayName: user.displayName,
+			title: title,
+			detail: detail,
+			timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+			likeCount: 0,
+		});
+
+		setTitle("");
+		setDetail("");
+		router.push("/QnA");
+	};
+
 	// const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
-    const [fullScreen, setFullScreen] = React.useState("true"); 
+	const [fullScreen, setFullScreen] = React.useState("true");
 	const [fullWidth, setFullWidth] = React.useState("true");
 	const [maxWidth, setMaxWidth] = React.useState("md");
 	const [open, setOpen] = React.useState(false);
@@ -266,10 +304,6 @@ export default function AddQuesion() {
 	};
 
 	const handleClose = () => {
-		setOpen(false);
-	};
-
-	const handleSubmit = (e) => {
 		setOpen(false);
 	};
 
@@ -386,6 +420,8 @@ export default function AddQuesion() {
 										variant="filled"
 										fontFamily="sans-serif"
 										placeholder="ตั้งชื่อหัวข้อคำถาม ?"
+										value={title}
+										onChange={(e) => setTitle(e.target.value)}
 									/>
 								</div>
 								<br />
@@ -400,7 +436,9 @@ export default function AddQuesion() {
 										variant="filled"
 										fontFamily="sans-serif"
 										rows={14}
-										placeholder="เขียนรายละเอียดคำถาม ?"
+										placeholder="พิมพ์รายละเอียดคำถาม ?"
+										value={detail}
+										onChange={(e) => setDetail(e.target.value)}
 									/>
 								</div>
 							</form>
@@ -425,3 +463,4 @@ export default function AddQuesion() {
 		</div>
 	);
 }
+export default AddQuestion;

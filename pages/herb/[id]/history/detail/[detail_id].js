@@ -218,12 +218,12 @@ export const getServerSideProps = async ({ query }) => {
 			content["familyName"] = result.data().familyName;
 			content["info"] = result.data().info;
 			content["attribute"] = result.data().attribute;
-			content["date"] = new Date(
-				result.data().timestamp.seconds * 1000
-			).toDateString();
 			content["timestamp"] = new Date(
 				result.data().timestamp.seconds * 1000
 			).toLocaleTimeString();
+			content["date"] = new Date(
+				result.data().timestamp.seconds * 1000
+			).toDateString();
 			content["imgUrl"] = result.data().imgUrl;
 			content["chemBondUrl"] = result.data().chemBondUrl;
 			content["NMRUrl"] = result.data().NMRUrl;
@@ -255,6 +255,7 @@ export const getServerSideProps = async ({ query }) => {
 
 const detail = (props) => {
 	const classes = useStyles();
+	const [fullWidth, setFullWidth] = React.useState("true");
 	const [open, setOpen] = React.useState(false);
 	const handleClickOpen = () => {
 		setOpen(true);
@@ -265,7 +266,7 @@ const detail = (props) => {
 	};
 
 	dayjs.extend(relativeTime);
-	const date = props.date;
+	// const date = props.date;
 	const time = props.timestamp;
 	const router = useRouter();
 
@@ -297,7 +298,7 @@ const detail = (props) => {
 	//NMR
 	const [NMR, setNMR] = useState(null);
 	const [NMRUrl, setNMRUrl] = useState(props.NMRUrl); //props.NMRUrl
-	const [newNMRUrl, setnewNMRUrl] = useState("");
+	const [newNMRUrl, setNewNMRUrl] = useState("");
 
 	const select_img_alert = (
 		<span>
@@ -399,7 +400,7 @@ const detail = (props) => {
 						.getDownloadURL()
 						.then((imgUrl) => {
 							setNewImgUrl(imgUrl);
-							setUploadNoti(handleClickVariant);
+							setUploadNoti(upload_complete_alert);
 							setTimeout(() => {
 								setUploadNoti(null);
 							}, 3000);
@@ -538,7 +539,15 @@ const detail = (props) => {
 										>
 											ประวัติการแก้ไขเมื่อ
 										</Typography>
-										<Typography className={classes.space}>:&nbsp;</Typography>
+										<Typography
+											variant="h4"
+											style={{
+												fontWeight: "bold",
+												display: "inline",
+											}}
+										>
+											:&nbsp;
+										</Typography>
 										<Typography
 											variant="h5"
 											style={{
@@ -547,7 +556,7 @@ const detail = (props) => {
 												display: "inline",
 											}}
 										>
-											{date}
+											{props.date}
 										</Typography>
 									</div>
 									<div className={classes.cardRoot}>
@@ -682,8 +691,9 @@ const detail = (props) => {
 												</Typography>
 												<Grid item xs={12} sm={6} md={3}>
 													<img
-														width="auto"
-														height="auto"
+														width="100%!important"
+														height="100%!important"
+														objectfit="contain"
 														src={
 															props.imgUrl || "http://via.placeholder.com/200"
 														}
@@ -701,8 +711,9 @@ const detail = (props) => {
 												</Typography>
 												<Grid item xs={12} sm={6} md={3}>
 													<img
-														width="auto"
-														height="auto"
+														width="1080px!important"
+														height="autopx!important"
+														objectfit="contain"
 														src={
 															props.chemBondUrl ||
 															"http://via.placeholder.com/200"
@@ -721,8 +732,9 @@ const detail = (props) => {
 												</Typography>
 												<Grid item xs={12} sm={6} md={3}>
 													<img
-														width="auto"
-														height="auto"
+														width="1080px!important"
+														height="autopx!important"
+														objectfit="contain"
 														src={
 															props.NMRUrl || "http://via.placeholder.com/200"
 														}
@@ -739,7 +751,7 @@ const detail = (props) => {
 													<Typography
 														style={{ fontWeight: "bold", float: "left" }}
 													>
-														เมื่อวันที่:&nbsp;
+														เมื่อ:&nbsp;
 													</Typography>
 													<Typography
 														style={{
@@ -749,7 +761,7 @@ const detail = (props) => {
 															float: "left",
 														}}
 													>
-														{date}
+														{props.date}
 													</Typography>
 													<Typography
 														style={{
@@ -767,7 +779,7 @@ const detail = (props) => {
 															float: "left",
 														}}
 													>
-														{time}
+														{props.timestamp}
 													</Typography>
 												</Grid>
 											</Grid>
@@ -792,7 +804,6 @@ const detail = (props) => {
 												startIcon={<EditIcon />}
 												className={classes.editButton}
 												onClick={toggleEdit}
-												// variant="contained"
 												color="primary"
 											>
 												<Typography>แก้ไข</Typography>
@@ -822,19 +833,20 @@ const detail = (props) => {
 												paddingLeft: "10px",
 												paddingRight: "10px",
 												paddingTop: "10px",
+												display: "inline",
 											}}
 										>
 											ประวัติการแก้ไข:
-											<Typography
-												variant="h5"
-												style={{
-													fontWeight: "normal",
-													color: "#007FFF",
-													display: "inline",
-												}}
-											>
-												{date}
-											</Typography>
+										</Typography>
+										<Typography
+											variant="h5"
+											style={{
+												fontWeight: "normal",
+												color: "#007FFF",
+												display: "inline",
+											}}
+										>
+											{props.date}
 										</Typography>
 									</div>
 									<div style={{ padding: "10px 0 10px 0" }}>
@@ -842,7 +854,7 @@ const detail = (props) => {
 											ชื่อภาษาไทย:
 										</Typography>
 										<TextField
-											fullwidth
+											fullWidth
 											id="filled-multiline-static"
 											variant="outlined"
 											color="primary"
@@ -857,7 +869,7 @@ const detail = (props) => {
 											ชื่อภาษาอังกฤษ:
 										</Typography>
 										<TextField
-											fullwidth
+											fullWidth
 											id="filled-multiline-static"
 											variant="outlined"
 											color="primary"
@@ -872,7 +884,7 @@ const detail = (props) => {
 											ชื่อทางวิทยาศาสตร์:
 										</Typography>
 										<TextField
-											fullwidth
+											fullWidth
 											id="filled-multiline-static"
 											variant="outlined"
 											color="primary"
@@ -887,7 +899,7 @@ const detail = (props) => {
 											ชื่อวงศ์:
 										</Typography>
 										<TextField
-											fullwidth
+											fullWidth
 											id="filled-multiline-static"
 											variant="outlined"
 											color="primary"
@@ -902,13 +914,13 @@ const detail = (props) => {
 											ข้อมูลสมุนไพร:
 										</Typography>
 										<TextField
-											fullwidth
+											fullWidth
 											id="filled-multiline-static"
 											variant="outlined"
 											color="primary"
 											fontFamily="sans-serif"
 											multiline
-											rowsMin={10}
+											rowsmin={10}
 											value={infoEdit}
 											onChange={(e) => setInfoEdit(e.target.value)}
 											placeholder="ข้อมูลสมุนไพร ?"
@@ -919,13 +931,13 @@ const detail = (props) => {
 											สรรพคุณของสมุนไพร:
 										</Typography>
 										<TextField
-											fullwidth
+											fullWidth
 											id="filled-multiline-static"
 											variant="outlined"
 											color="primary"
 											fontFamily="sans-serif"
 											multiline
-											rowsMin={10}
+											rowsmin={10}
 											value={attributeEdit}
 											onChange={(e) => setAttributeEdit(e.target.value)}
 											placeholder="สรรพคุณของสมุนไพร ?"

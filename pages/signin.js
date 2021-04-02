@@ -54,11 +54,11 @@ const SignIn = () => {
 	// const user = useContext(UserContext);
 
 	auth.onAuthStateChanged((user) => {
-    if (user) {
-      window.location.href = "/";
-    } else {
-    }
-  });
+		if (user) {
+			window.location.href = "/";
+		} else {
+		}
+	});
 	const signin_failed_alert = () => {
 		return (
 			<span>
@@ -71,10 +71,17 @@ const SignIn = () => {
 		);
 	};
 
+	const signin_failed = (
+		<span>
+			<Alert severity="warning">
+				<Typography>อีเมลหรือรหัสผ่านไม่ถูกต้อง!!!</Typography>
+			</Alert>
+		</span>
+	);
 	const signInWithEmailAndPasswordHandler = (e, email, password) => {
 		e.preventDefault();
 		auth.signInWithEmailAndPassword(email, password).catch((error) => {
-			setError("Email or password is not correct !!");
+			setError(signin_failed);
 			setTimeout(() => {
 				setError(null);
 			}, 2000);
@@ -146,7 +153,6 @@ const SignIn = () => {
 									<Button
 										type="submit"
 										fullWidth
-										// variant="contained"
 										color="primary"
 										alignitems="center"
 										onClick={(event) => {
@@ -179,9 +185,11 @@ const SignIn = () => {
 					</div>
 					<br />
 					<br />
-					<Typography style={{ textAlign: "center", fontWeight: "bold" }}>
-						หรือ
-					</Typography>
+					<Grid item xs={12} style={{display: "flex", flexDirection: "row", justifyContent: "center", alignItem: "center"}}>
+						<Typography style={{ textAlign: "center", fontWeight: "bold" }}>
+							หรือ
+						</Typography>
+					</Grid>
 				</Container>
 				<StyledFirebaseAuth
 					uiConfig={uiConfig}

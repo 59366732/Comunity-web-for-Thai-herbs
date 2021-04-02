@@ -153,21 +153,21 @@ const NotiStyledBadge = withStyles((theme) => ({
 	},
 }))(Badge);
 
-
-
 export default function Navbar() {
 	const { user, setUser } = useContext(UserContext);
 	const [loggedIn, setLoggedIn] = useState(false);
 
 	const classes = useStyles();
 	const [open, setOpen] = React.useState(false);
+	const [openLogout, setOpenLogout] = React.useState(false);
 	const [anchorEl, setAnchorEl] = React.useState(null);
-	const handleClickOpen = () => {
-		setOpen(true);
+	
+	const handleClickOpenLogout = () => {
+		setOpenLogout(true);
 	};
 
-	const handleClose = () => {
-		setOpen(false);
+	const handleCloseLogout = () => {
+		setOpenLogout(false);
 	};
 
 	auth.onAuthStateChanged((user) => {
@@ -188,6 +188,47 @@ export default function Navbar() {
 
 	const openNoti = Boolean(anchorEl);
 	const id = open ? "simple-popover" : undefined;
+
+	const ConfirmLogout = () => {
+		return (
+			<span>
+				<Dialog
+					open={openLogout}
+					TransitionComponent={Transition}
+					keepMounted
+					onClose={handleCloseLogout}
+					PaperComponent={PaperComponent}
+					aria-labelledby="draggable-dialog-title"
+				>
+					<DialogTitle style={{ cursor: "move" }} id="draggable-dialog-title">
+						<Typography>ยืนยันออกจากระบบ</Typography>
+					</DialogTitle>
+					<DialogContent>
+						<DialogContentText>
+							คุณต้องการออกจากระบบหรือไม่?
+							คลิก(ใช่)เพื่อออกจากระบบหรือคลิก(ไม่ใช่)เพื่อคงอยู่ในระบบ.
+						</DialogContentText>
+					</DialogContent>
+					<DialogActions>
+						<Button autoFocus onClick={handleCloseLogout} color="default">
+							<Typography>ไม่ใช่</Typography>
+						</Button>
+						<Link href="/">
+							<Button
+								onClick={() => {
+									auth.signOut();
+								}}
+								color="primary"
+							>
+								<Typography>ใช่</Typography>
+							</Button>
+						</Link>
+					</DialogActions>
+				</Dialog>
+			</span>
+		);
+	};
+
 	return (
 		<Box width={1}>
 			<HideOnScroll>
@@ -202,7 +243,11 @@ export default function Navbar() {
 								edge="start"
 								aria-label="home"
 								href="/"
-								style={{ color: `white`, fontSize: "200%", margin: "0 0 0 50px" }}
+								style={{
+									color: `white`,
+									fontSize: "200%",
+									margin: "0 0 0 50px",
+								}}
 							>
 								เว็บชุมชนสมุนไพรไทย
 							</IconButton>
@@ -224,7 +269,7 @@ export default function Navbar() {
 											<Typography>ค้นหา</Typography>
 										</IconButton>
 									</Link>
-									<Link href="/qanda">
+									<Link href="/QnA">
 										<IconButton style={{ color: `white` }}>
 											<Typography>ถาม-ตอบ</Typography>
 										</IconButton>
@@ -233,7 +278,7 @@ export default function Navbar() {
 										<>
 											<Link href="/signup">
 												<IconButton style={{ color: `white` }}>
-													<Typography>ลงทะเบียน</Typography>
+													<Typography>สมัครสมาชิก</Typography>
 												</IconButton>
 											</Link>
 											<Link href="/signin">
@@ -254,7 +299,14 @@ export default function Navbar() {
 														}}
 														variant="dot"
 													>
-														<Avatar className={classes.avatar} src={user.photoURL} alt="profile"/>
+														<Avatar
+															className={classes.avatar}
+															src={
+																user.photoURL ||
+																"https://res.cloudinary.com/dqcsk8rsc/image/upload/v1577268053/avatar-1-bitmoji_upgwhc.png"
+															}
+															alt=""
+														/>
 													</ProfileStyledBadge>
 													<Typography
 														style={{
@@ -303,9 +355,7 @@ export default function Navbar() {
 													<List className={classes.root}>
 														<ListItem alignItems="flex-start">
 															<ListItemAvatar>
-																<Avatar
-																	alt="Remy Sharp"
-																/>
+																<Avatar alt="Remy Sharp" />
 															</ListItemAvatar>
 															<ListItemText
 																primary="Brunch this weekend?"
@@ -329,9 +379,7 @@ export default function Navbar() {
 														<Divider variant="inset" component="li" />
 														<ListItem alignItems="flex-start">
 															<ListItemAvatar>
-																<Avatar
-																	alt="Travis Howard"
-																/>
+																<Avatar alt="Travis Howard" />
 															</ListItemAvatar>
 															<ListItemText
 																primary="Summer BBQ"
@@ -355,9 +403,7 @@ export default function Navbar() {
 														<Divider variant="inset" component="li" />
 														<ListItem alignItems="flex-start">
 															<ListItemAvatar>
-																<Avatar
-																	alt="Cindy Baker"
-																/>
+																<Avatar alt="Cindy Baker" />
 															</ListItemAvatar>
 															<ListItemText
 																primary="Oui Oui"
@@ -382,49 +428,12 @@ export default function Navbar() {
 												</Popover>
 											</React.Fragment>
 											<IconButton
-												onClick={handleClickOpen}
+												onClick={handleClickOpenLogout}
 												style={{ color: `red` }}
 											>
 												<Typography>ออกจากระบบ</Typography>
 											</IconButton>
-											<Dialog
-												open={open}
-												TransitionComponent={Transition}
-												keepMounted
-												onClose={handleClose}
-												PaperComponent={PaperComponent}
-												aria-labelledby="draggable-dialog-title"
-											>
-												<DialogTitle
-													style={{ cursor: "move" }}
-													id="draggable-dialog-title"
-												>
-													<Typography>ยืนยันออกจากระบบ</Typography>
-												</DialogTitle>
-												<DialogContent>
-													<DialogContentText>
-															คุณต้องการออกจากระบบหรือไม่?
-															คลิก(ใช่)เพื่อออกจากระบบหรือคลิก(ไม่ใช่)เพื่อคงอยู่ในระบบ.
-													</DialogContentText>
-												</DialogContent>
-												<DialogActions>
-													<Button
-														autoFocus
-														onClick={handleClose}
-														color="default"
-													>
-														<Typography>ไม่ใช่</Typography>
-													</Button>
-													<Button
-														onClick={() => {
-															auth.signOut();
-														}}
-														color="primary"
-													>
-														<Typography>ใช่</Typography>
-													</Button>
-												</DialogActions>
-											</Dialog>
+											<ConfirmLogout />
 										</>
 									)}
 								</List>

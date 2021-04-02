@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useState, useContext, useEffect } from "react";
 import Link from "next/link";
+import firebase from "firebase";
 import db, { auth, storage } from "../../database/firebase";
+import { UserContext } from "../../providers/UserProvider";
 import { useRouter } from "next/router";
-import { useContext, useState, useEffect } from "react";
+
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import ReplyIcon from "@material-ui/icons/Reply";
 import Portal from "@material-ui/core/Portal";
@@ -149,6 +151,7 @@ const useStyles = makeStyles((theme) => ({
 		display: "inline",
 		fontWeight: "normal",
 		textDecoration: "none",
+		wordWrap: "break-word",
 	},
 	paper: {
 		padding: theme.spacing(2),
@@ -203,6 +206,7 @@ const useStyles = makeStyles((theme) => ({
 	questionDetail: {
 		fontWeight: "normal",
 		textIndent: "20px",
+		wordWrap: "break-word",
 	},
 	snackbar: {
 		width: "100%",
@@ -217,17 +221,120 @@ const useStyles = makeStyles((theme) => ({
 	},
 }));
 
-const user_own_question = "ชื่อเจ้าของกระทู้...";
-const question_title = "หัวข้อคำถาม...";
-const question_detail =
-	"รายละเอียดคำถาม...รายละเอียดคำถาม...รายละเอียดคำถาม...รายละเอียดคำถาม...รายละเอียดคำถาม...รายละเอียดคำถาม...รายละเอียดคำถาม...";
+export const getServerSideProps = async ({ query }) => {
+	const content = {};
+	content["Question_id"] = query.QnA_id;
 
-const user_own_answer = "ชื่อผู้แสดงความคิดเห็น...";
-const answer_detail =
-	"รายละเอียดความคิดเห็น...รายละเอียดความคิดเห็น...รายละเอียดความคิดเห็น...รายละเอียดความคิดเห็น...รายละเอียดความคิดเห็น...รายละเอียดความคิดเห็น...รายละเอียดความคิดเห็น...";
-const SampleQuestionDetail = () => {
+	await db
+		.collection("QnA")
+		.doc(query.QnA_id)
+		.get()
+		.then((result) => {
+			content["title"] = result.data().title;
+			content["detail"] = result.data().detail;
+		})
+		.catch(function (error) {
+			console.log("Error getting documents: ", error);
+		});
+	return {
+		props: {
+			Question_id: content.Question_id,
+			title: content.title,
+			detail: content.detail,
+		},
+	};
+};
+
+const QnApost = async (props) => {
 	const classes = useStyles();
+
+	const { user, setUser } = useContext(UserContext);
+	const [comments, setComments] = useState([]);
 	const router = useRouter();
+
+	//input
+	const [inputComment, setInputComment] = useState("");
+
+	useEffect(() => {
+		db.collection("QnA")
+			.doc(props.Question_id)
+			.collection("comments")
+			.orderBy("timestamp")
+			.onSnapshot((snap) => {
+				const comment = snap.docs.map((doc) => ({
+					id: doc.id,
+					...doc.data(),
+				}));
+				setComments(comment);
+			});
+	}, []);
+	console.log(props.title);
+	const thumbUp = async (commentid) => {
+		let data = await db
+			.collection("LikeComment")
+			.where("commentid", "==", commentid)
+			.where("uid", "==", user.uid)
+			.limit(1)
+			.get();
+
+		const mapData = data.docs.map((doc) => ({
+			id: doc.id,
+			...doc.data(),
+		}));
+
+		if (mapData.length != 0) {
+			//there is mapData
+			return voteORnot(mapData, commentid);
+		} else {
+			//there isn't mapData
+			const mapData = null;
+			return voteORnot(mapData, commentid);
+		}
+	};
+
+	const voteORnot = (test, commentid) => {
+		//increment
+		const Increment = firebase.firestore.FieldValue.increment(+1);
+		//decrement
+		const Decrement = firebase.firestore.FieldValue.increment(-1);
+
+		if (test == null) {
+			db.collection("QnA")
+				.doc(props.Question_id)
+				.collection("comments")
+				.doc(commentid)
+				.update({ likeCount: Increment });
+
+			db.collection("LikeComment").add({
+				uid: user.uid,
+				commentid: commentid,
+				liked: true,
+			});
+
+			return;
+		}
+		test.map((dt) => {
+			if (dt.liked == true) {
+				db.collection("QnA")
+					.doc(props.Question_id)
+					.collection("comments")
+					.doc(commentid)
+					.update({ likeCount: Decrement });
+
+				db.collection("LikeComment").doc(dt.id).update({ liked: false });
+			} else if (dt.liked == false) {
+				db.collection("QnA")
+					.doc(props.Question_id)
+					.collection("comments")
+					.doc(commentid)
+					.update({ likeCount: Increment });
+
+				db.collection("LikeComment").doc(dt.id).update({ liked: true });
+			}
+		});
+	};
+
+	const [fullWidth, setFullWidth] = React.useState("true");
 	const [open, setOpen] = React.useState(false);
 	const handleClickOpen = () => {
 		setOpen(true);
@@ -236,6 +343,12 @@ const SampleQuestionDetail = () => {
 	const handleClose = () => {
 		setOpen(false);
 	};
+
+	const handleCloseConfirm = () => {
+		// window.location.href = "/signin";
+		setOpen(false);
+	};
+
 	const [loggedIn, setLoggedIn] = useState(false);
 	auth.onAuthStateChanged((user) => {
 		if (user) {
@@ -249,6 +362,20 @@ const SampleQuestionDetail = () => {
 	const container = React.useRef(null);
 
 	const handleReply = () => {
+		setShowReplyField(!showReplyField);
+	};
+
+	const addComment = (e) => {
+		e.preventDefault();
+
+		db.collection("QnA").doc(props.Question_id).collection("comments").add({
+			userDisplayName: user.displayName,
+			comment: inputComment,
+			timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+			likeCount: 0,
+		});
+
+		setInputComment("");
 		setShowReplyField(!showReplyField);
 	};
 
@@ -268,17 +395,16 @@ const SampleQuestionDetail = () => {
 					</DialogTitle>
 					<DialogContent>
 						<DialogContentText>
-							คุณต้องเข้าสู่ระบบเพื่อแสดงความคิดเห็น เข้าสู่ระบบตอนนี้?
-							คลิก(ใช่)เพื่อทำการเข้าสู้ระบบ หรือคลิก(ไม่ใช่)ปิดหน้าต่างนี้.
+							คุณต้องเข้าสู่ระบบก่อนเพื่อแสดงความคิดเห็น
+							คลิก(ใช่)เพื่อทำการเข้าสู้ระบบ หรือคลิก(ไม่ใช่)เพื่อปิดหน้าต่างนี้.
 						</DialogContentText>
 					</DialogContent>
 					<DialogActions>
 						<Button autoFocus onClick={handleClose} color="default">
 							<Typography>ไม่ใช่</Typography>
 						</Button>
-						{/* ยังกลับไปไม่ได้ */}
-						<Link href="./signin">
-							<Button color="primary">
+						<Link href="../signin">
+							<Button onClick={handleCloseConfirm} color="primary">
 								<Typography>ใช่</Typography>
 							</Button>
 						</Link>
@@ -305,7 +431,7 @@ const SampleQuestionDetail = () => {
 													:&nbsp;
 												</Typography>
 												<Typography className={classes.userName}>
-													{user_own_question}
+													{props.userDisplayName}
 												</Typography>
 											</CardActionArea>
 										</Card>
@@ -322,24 +448,17 @@ const SampleQuestionDetail = () => {
 										</Typography>
 										<Typography className={classes.space}>:&nbsp;</Typography>
 										<Typography className={classes.content}>
-											{question_title}
+											{props.title}
 										</Typography>
 									</div>
-								</CardContent>
-							</Card>
-						</div>
-						<div className={classes.DAC}>
-							<Card
-								className={classes.attributeCard}
-								style={{ marginTop: "10px" }}
-							>
-								<CardContent>
-									<Typography className={classes.title}>
-										รายละเอียดคำถาม:
-									</Typography>
-									<Typography className={classes.questionDetail}>
-										{question_detail}
-									</Typography>
+									<div>
+										<Typography className={classes.title}>
+											รายละเอียดคำถาม:
+										</Typography>
+										<Typography className={classes.questionDetail}>
+											{props.detail}
+										</Typography>
+									</div>
 								</CardContent>
 							</Card>
 						</div>
@@ -365,23 +484,34 @@ const SampleQuestionDetail = () => {
 									<Typography style={{ color: "black" }}>กลับ</Typography>
 								</Button>
 								{loggedIn ? (
-									<Button
-										onClick={handleReply}
-										className={classes.replyButton}
-										color="primary"
-									>
+									<>
 										{showReplyField ? (
-											<Typography>ปิด</Typography>
+											<Button
+												onClick={handleReply}
+												className={classes.replyButton}
+												color="secondary"
+												startIcon={<CloseIcon />}
+											>
+												ปิด
+											</Button>
 										) : (
-											<Typography>ตอบกลับ</Typography>
+											<Button
+												onClick={handleReply}
+												className={classes.replyButton}
+												color="primary"
+												startIcon={<ReplyIcon />}
+											>
+												ตอบกลับ
+											</Button>
 										)}
-									</Button>
+									</>
 								) : (
 									<React.Fragment>
 										<Button
 											onClick={handleClickOpen}
 											className={classes.replyButton}
 											color="primary"
+											startIcon={<ReplyIcon />}
 										>
 											ตอบกลับ
 										</Button>
@@ -395,17 +525,27 @@ const SampleQuestionDetail = () => {
 								<span>
 									<div style={replyBorder}>
 										<TextField
-											fullwidth
+											fullWidth
 											id="outlined-multiline-flexible"
 											id="filled-multiline-static"
 											variant="outlined"
+											multiline
+											rows={7}
 											color="primary"
 											fontFamily="sans-serif"
-											placeholder="เขียนคำถาม ?"
+											placeholder="พิมพ์ข้อความ ?"
+											value={inputComment}
+											onChange={(e) => setInputComment(e.target.value)}
 										/>
 										<div>
-											<Button style={{ marginTop: "10px" }} color="primary">
-												<Typography>ส่งข้อความ</Typography>
+											<Button
+												startIcon={<ReplyIcon />}
+												style={{ marginTop: "10px" }}
+												color="primary"
+												onClick={addComment}
+												type="submit"
+											>
+												<Typography>ส่ง</Typography>
 											</Button>
 										</div>
 									</div>
@@ -413,47 +553,32 @@ const SampleQuestionDetail = () => {
 							</Portal>
 						) : null}
 						<div className={classes.alert} ref={container} />
-						<div className={classes.DAC} style={{ marginLeft: "50px" }}>
-							<Card
-								className={classes.attributeCard}
-								style={{ marginTop: "20px" }}
+						<br />
+						{comments.map((comment) => (
+							<div
+								key={comment.id}
+								className={classes.DAC}
+								style={{ marginLeft: "50px", marginTop: "10px" }}
 							>
-								<CardContent>
-									<Typography className={classes.title}>
-										ความคิดเห็นที่ 1 โดย
-									</Typography>
-									<Typography className={classes.space}>:&nbsp;</Typography>
-									<Typography className={classes.userName}>
-										{user_own_answer}
-									</Typography>
-									<Typography className={classes.questionDetail}>
-										{answer_detail}
-									</Typography>
-								</CardContent>
-							</Card>
-						</div>
-						<div
-							className={classes.DAC}
-							style={{ marginLeft: "50px", marginTop: "10px" }}
-						>
-							<Card
-								className={classes.attributeCard}
-								style={{ marginTop: "10px" }}
-							>
-								<CardContent>
-									<Typography className={classes.title}>
-										ความคิดเห็นที่ 2 โดย
-									</Typography>
-									<Typography className={classes.space}>:&nbsp;</Typography>
-									<Typography className={classes.userName}>
-										{user_own_answer}
-									</Typography>
-									<Typography className={classes.questionDetail}>
-										{answer_detail}
-									</Typography>
-								</CardContent>
-							</Card>
-						</div>
+								<Card
+									className={classes.attributeCard}
+									style={{ marginTop: "10px" }}
+								>
+									<CardContent>
+										<Typography className={classes.title}>
+											ความคิดเห็นที่ x โดย
+										</Typography>
+										<Typography className={classes.space}>:&nbsp;</Typography>
+										<Typography className={classes.userName}>
+											{comment.userDisplayName}
+										</Typography>
+										<Typography className={classes.questionDetail}>
+											{comment.comment}
+										</Typography>
+									</CardContent>
+								</Card>
+							</div>
+						))}
 					</form>
 				</Box>
 			</Container>
@@ -461,4 +586,4 @@ const SampleQuestionDetail = () => {
 	);
 };
 
-export default SampleQuestionDetail;
+export default QnApost;

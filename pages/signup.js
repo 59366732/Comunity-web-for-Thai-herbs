@@ -59,20 +59,35 @@ const SignUp = () => {
 	const user = useContext(UserContext);
 	const router = useRouter();
 
-	const select_img_alert = (
-		// <span>
-		<Alert severity="error">
-			<AlertTitle>Error</AlertTitle>
-			This is an error alert — <strong>check it out!</strong>
-		</Alert>
-		// </span>
+	const alert = (
+		<span>
+			<Alert severity="error">
+				<AlertTitle>Error</AlertTitle>
+				This is an error alert — <strong>check it out!</strong>
+			</Alert>
+		</span>
 	);
 
+	const password_no_match = (
+		<span>
+			<Alert severity="error">
+				<Typography>รหัสผ่านไม่ตรงกัน!!!</Typography>
+			</Alert>
+		</span>
+	);
+
+	const signup_failed = (
+		<span>
+			<Alert severity="warning">
+				<Typography>การลงทะเบียนเกิดข้อผิดพลาด!!!</Typography>
+			</Alert>
+		</span>
+	);
 	const createUserWithEmailAndPasswordHandler = async (e, email, password) => {
 		e.preventDefault();
 		if (password !== confirm) {
-			console.log("pass and conf are not the same!!");
-			setError("Password and Confirmpassword are not the same!!");
+			console.log("password and confirm are not match!!!");
+			setError(password_no_match);
 			setPassword("");
 			setConfirm("");
 			setTimeout(() => {
@@ -87,7 +102,7 @@ const SignUp = () => {
 			);
 			generateUserDocument(user, { displayName });
 		} catch (error) {
-			setError("Error Signing up with email and password");
+			setError(signup_failed);
 		}
 
 		setEmail("");
@@ -125,7 +140,7 @@ const SignUp = () => {
 										variant="outlined"
 										required
 										fullWidth
-										label="ชื่อโปรไฟล์"
+										label="ชื่อผู้ใช้"
 										autoFocus
 										type="text"
 										name="displayName"
@@ -179,21 +194,33 @@ const SignUp = () => {
 										id="confirmPassword"
 										onChange={(e) => setConfirm(e.target.value)}
 									/>
+									<Link href="/termofservices">
+										<a>
+											<Typography
+												variant="caption"
+												style={{
+													color: "#007FFF",
+													textDecoration: "underline",
+												}}
+											>
+												ข้อกำหนดและเงื่อนไข
+											</Typography>
+										</a>
+									</Link>
 								</Grid>
 								<Grid item xs={12}>
 									<FormControlLabel
 										control={
 											<Checkbox value="allowExtraEmails" color="primary" />
 										}
-										label="I want to receive herb's information updated news and approve pending via email."
+										label="ยอมรับข้อกำหนดและเงื่อนไขการใช้งานของเว็บชุมชนสำหรับข้อมูลสมุนไพรไทย (Community web for Thai herbs)"
 									/>
 								</Grid>
 							</Grid>
-							<br/>
+							<br />
 							<Button
 								type="submit"
 								fullWidth
-								// variant="contained"
 								color="primary"
 								className={classes.submit}
 								onClick={(event) => {
@@ -205,7 +232,7 @@ const SignUp = () => {
 									);
 								}}
 							>
-								<Typography>ยืนยันการลงทะเบียน</Typography>
+								<Typography>ยืนยัน</Typography>
 							</Button>
 							<Grid container justify="flex-end">
 								<Grid item>

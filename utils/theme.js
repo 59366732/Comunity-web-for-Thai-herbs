@@ -24,7 +24,7 @@ export default {
 			"-apple-system",
 			"BlinkMacSystemFont",
 			'"Segoe UI"',
-			"Roboto",
+			// "Roboto",
 			'"Helvetica Neue"',
 			"Arial",
 			"sans-serif",
@@ -107,10 +107,10 @@ export default {
 			disableRipple: true,
 		},
 		MuiTextField: {
-			// fullWidth: {
-			// 	width: "auto",
-			// 	maxWidth: "100%",
-			// },
+			fullWidth: {
+				width: "auto",
+				maxWidth: "100%",
+			},
 			variant: "filled",
 			inputlabelprops: {
 				shrink: true,
@@ -133,6 +133,20 @@ export default {
 		MuiCard: {
 			elevation: 12,
 			// variant: "contained",
+		},
+		MuiTypography: {
+			variantMapping: {
+				h1: "h2",
+				h2: "h2",
+				h3: "h2",
+				h4: "h2",
+				h5: "h2",
+				h6: "h2",
+				subtitle1: "h2",
+				subtitle2: "h2",
+				body1: "span",
+				body2: "span",
+			},
 		},
 	},
 };
