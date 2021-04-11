@@ -210,7 +210,7 @@ const useStyles = makeStyles((theme) => ({
 		color: "#007FFF",
 		display: "inline",
 	},
-	questionDetail: {
+	postDetail: {
 		fontWeight: "normal",
 		textIndent: "20px",
 		wordWrap: "break-word",
@@ -237,15 +237,15 @@ export const getServerSideProps = async ({ query }) => {
 		.doc(query.QnA_id)
 		.get()
 		.then((result) => {
-			content["postUserDisplayName"] = result.data().userDisplayName;
+			content["user_id"] = result.data().user_id;
+			content["postTitle"] = result.data().title;
+			content["postDetail"] = result.data().detail;
 			content["postTime"] = new Date(
 				result.data().timestamp.seconds * 1000
 			).toLocaleTimeString();
 			content["postDate"] = new Date(
 				result.data().timestamp.seconds * 1000
 			).toDateString();
-			content["postTitle"] = result.data().title;
-			content["postDetail"] = result.data().detail;
 			content["postLikeCount"] = result.data().likeCount;
 		})
 		.catch(function (error) {
@@ -254,12 +254,12 @@ export const getServerSideProps = async ({ query }) => {
 	return {
 		props: {
 			Question_id: content.Question_id,
-			questionOwner: content.postUserDisplayName,
-			questionTime: content.postTime,
-			questionDate: content.postDate,
-			questionTitle: content.postTitle,
-			questionDetail: content.postDetail,
-			questionLikeCount: content.postLikeCount,
+			user_id: content.user_id,
+			postTime: content.postTime,
+			postDate: content.postDate,
+			postTile: content.postTitle,
+			postDetail: content.postDetail,
+			postLikeCount: content.postLikeCount,
 		},
 	};
 };
@@ -271,6 +271,8 @@ const QnApost = (props) => {
 	const [posts, setPosts] = useState([]);
 	const [comments, setComments] = useState([]);
 	const router = useRouter();
+	const [loggedIn, setLoggedIn] = useState(false);
+	const [displayName, setDisplayName] = useState("");
 
 	//input
 	const [inputComment, setInputComment] = useState("");
@@ -281,20 +283,67 @@ const QnApost = (props) => {
 			.collection("comments")
 			.orderBy("timestamp", "desc")
 			.onSnapshot((snap) => {
+				const commentData = snap.docs.map((doc) => ({
+					id: doc.id,
+					...doc.data(),
+				}));
+
+				setComments(comment);
+				{
+					commentData.map((comment) => {
+						if (comment.user_id) {
+							db.collection("users")
+								.doc(comment.user_id)
+								.get()
+								.then((result) => {
+									const newObject = Object.assign(comment, result.data());
+									setComments((comments) => [...comments, newObject]);
+								});
+						}
+					});
+				}
+				///==============TEST BEGIN=========================================
 				const post = snap.docs.map((doc) => ({
 					id: doc.id,
 					...doc.data(),
 				}));
-				const comment = snap.docs.map((doc) => ({
+				setPosts(post);
+				{
+					postData.map((post) => {
+						if (post.user_id) {
+							db.collection("users")
+								.doc(post.user_id)
+								.get()
+								.then((result) => {
+									const newObject = Object.assign(post, result.data());
+									setPosts((posts) => [...posts, newObject]);
+								});
+						}
+					});
+				}
+				///==============TEST END===========================================
+			});
+		db.collection("users")
+			.doc(props.user_id)
+			.get()
+			.then((result) => {
+				setDisplayName(result.data().displayName);
+			});
+		///==============TEST BEGIN=========================================
+		db.collection("LikePost")
+			.where("uid", "==", user.uid)
+			.get()
+			.then(function (querySnapshot) {
+				const content = querySnapshot.docs.map((doc) => ({
 					id: doc.id,
 					...doc.data(),
 				}));
-				setPosts(post);
-				setComments(comment);
+				setLikedPost(content);
 			});
+		///==============TEST END===========================================
 	}, []);
 
-	// var Like;
+	///==============TEST BEGIN=========================================
 	const Post_thumbUp = async (postid) => {
 		let data = await db
 			.collection("LikePost")
@@ -446,6 +495,7 @@ const QnApost = (props) => {
 			</span>
 		);
 	};
+	///==============TEST END===========================================
 	const Comment_thumbUp = async (commentid) => {
 		let data = await db
 			.collection("LikeComment")
@@ -544,7 +594,7 @@ const QnApost = (props) => {
 		e.preventDefault();
 
 		db.collection("QnA").doc(props.Question_id).collection("comments").add({
-			userDisplayName: user.displayName,
+			user_id: user.uid,
 			comment: inputComment,
 			timestamp: firebase.firestore.FieldValue.serverTimestamp(),
 			likeCount: 0,
@@ -607,7 +657,7 @@ const QnApost = (props) => {
 													:&nbsp;
 												</Typography>
 												<Typography className={classes.userName}>
-													{props.questionOwner}
+													{displayName}
 												</Typography>
 											</CardActionArea>
 										</Card>
@@ -619,13 +669,13 @@ const QnApost = (props) => {
 													:&nbsp;
 												</Typography>
 												<Typography className={classes.userName}>
-													{props.questionDate}
+													{props.postDate}
 												</Typography>
 												<Typography className={classes.space}>
 													,&nbsp;
 												</Typography>
 												<Typography className={classes.userName}>
-													{props.questionTime}
+													{props.postTime}
 												</Typography>
 											</CardActionArea>
 										</Card>
@@ -642,7 +692,7 @@ const QnApost = (props) => {
 										</Typography>
 										<Typography className={classes.space}>:&nbsp;</Typography>
 										<Typography className={classes.content}>
-											{props.questionTitle}
+											{props.postTile}
 										</Typography>
 									</div>
 									<div>
@@ -650,8 +700,8 @@ const QnApost = (props) => {
 											รายละเอียดคำถาม:
 										</Typography>
 										<Typography className={classes.space}>:&nbsp;</Typography>
-										<Typography className={classes.questionDetail}>
-											{props.questionDetail}
+										<Typography className={classes.postDetail}>
+											{props.postDetail}
 										</Typography>
 									</div>
 								</CardContent>
@@ -660,7 +710,7 @@ const QnApost = (props) => {
 										<ThumbUpAltIcon />
 									</IconButton>
 									<div style={{ margin: "0 0 0 0" }}>
-										<Typography>{props.questionLikeCount}</Typography>
+										<Typography>{props.postLikeCount}</Typography>
 										<Typography className={classes.space}>&nbsp;</Typography>
 										<Typography>Like</Typography>
 									</div>
@@ -776,7 +826,7 @@ const QnApost = (props) => {
 											</Typography>
 											<Typography className={classes.space}>:&nbsp;</Typography>
 											<Typography className={classes.userName}>
-												{comment.userDisplayName}
+												{comment.displayName}
 											</Typography>
 											<Typography className={classes.space}>&nbsp;</Typography>
 											<Typography className={classes.title}>เมื่อ</Typography>
@@ -793,7 +843,7 @@ const QnApost = (props) => {
 												).toLocaleTimeString()}
 											</Typography>
 											<br />
-											<Typography className={classes.questionDetail}>
+											<Typography className={classes.postDetail}>
 												&nbsp;{comment.comment}
 											</Typography>
 										</CardContent>

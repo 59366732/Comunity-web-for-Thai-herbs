@@ -277,7 +277,7 @@ const AddQuestion = () => {
 		e.preventDefault();
 
 		db.collection("QnA").add({
-			userDisplayName: user.displayName,
+			user_id: user.uid,
 			title: title,
 			detail: detail,
 			timestamp: firebase.firestore.FieldValue.serverTimestamp(),
@@ -462,5 +462,5 @@ const AddQuestion = () => {
 			</Dialog>
 		</div>
 	);
-}
+};
 export default AddQuestion;

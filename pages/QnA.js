@@ -151,6 +151,7 @@ const QandA = () => {
 	const [response, setResponse] = useState([]);
 	const [posts, setPosts] = useState([]);
 	const [loggedIn, setLoggedIn] = useState(false);
+	const [likedPost, setLikedPost] = useState([]);
 
 	auth.onAuthStateChanged((user) => {
 		if (user) {
@@ -164,11 +165,35 @@ const QandA = () => {
 		db.collection("QnA")
 			.orderBy("timestamp", "desc")
 			.onSnapshot((snap) => {
-				const post = snap.docs.map((doc) => ({
+				const postData = snap.docs.map((doc) => ({
 					id: doc.id,
 					...doc.data(),
 				}));
-				setPosts(post);
+				setPosts([]);
+				{
+					postData.map((post) => {
+						if (post.user_id) {
+							db.collection("users")
+								.doc(post.user_id)
+								.get()
+								.then((result) => {
+									const newObject = Object.assign(post, result.data());
+									setPosts((posts) => [...posts, newObject]);
+								});
+						}
+					});
+				}
+			});
+
+		db.collection("LikePost")
+			.where("uid", "==", user.uid)
+			.get()
+			.then(function (querySnapshot) {
+				const content = querySnapshot.docs.map((doc) => ({
+					id: doc.id,
+					...doc.data(),
+				}));
+				setLikedPost(content);
 			});
 	}, []);
 
@@ -345,7 +370,11 @@ const QandA = () => {
 										<br />
 										<Typography
 											variant="caption"
-											style={{ margin: "4px 0 0 0", fontWeight: "bold", float: "left" }}
+											style={{
+												margin: "4px 0 0 0",
+												fontWeight: "bold",
+												float: "left",
+											}}
 										>
 											โดย:
 										</Typography>
@@ -384,7 +413,11 @@ const QandA = () => {
 										</Typography>
 										<Typography
 											variant="caption"
-											style={{ color: "#007FFF", display: "inline", textTransform: "lowercase", }}
+											style={{
+												color: "#007FFF",
+												display: "inline",
+												textTransform: "lowercase",
+											}}
 										>
 											{new Date(
 												post.timestamp.seconds * 1000
