@@ -38,6 +38,8 @@ import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import Draggable from "react-draggable";
 import Slide from "@material-ui/core/Slide";
+import Snackbar from "@material-ui/core/Snackbar";
+import MuiAlert from "@material-ui/lab/Alert";
 
 const frameStyles = {
 	fontFamily: "sans-serif",
@@ -68,6 +70,7 @@ function PaperComponent(props) {
 const Transition = React.forwardRef(function Transition(props, ref) {
 	return <Slide direction="up" ref={ref} {...props} />;
 });
+
 const useStyles = makeStyles((theme) => ({
 	root: {
 		display: "flex",
@@ -89,11 +92,25 @@ const useStyles = makeStyles((theme) => ({
 	title: {
 		fontWeight: "bold",
 	},
+	snackbar: {
+		width: "100%",
+	},
 }));
+
 
 function Addherb() {
 	const classes = useStyles();
 	const [openBack, setOpenBack] = React.useState(false);
+	const [openSnackbar, setOpenSnackbar] = React.useState(false);
+
+	const handleCloseSnackbar = (event, reason) => {
+		if (reason === "clickaway") {
+			return;
+		}
+
+		setOpenSnackbar(false);
+	};
+
 	const handleClickOpenBack = () => {
 		setOpenBack(true);
 	};
@@ -148,7 +165,7 @@ function Addherb() {
 			<Alert severity="error">
 				<Typography>
 					ในการเพิ่มข้อมูลสมุนไพรเข้าสู่ระบบ
-					จำเป็นต้องเพิ่มชื่อสมุนไพรและข้อมูลพื้นฐานของสมุนไพร!!!
+					จำเป็นต้องมีชื่อสมุนไพรและข้อมูลพื้นฐานของสมุนไพร!!!
 				</Typography>
 			</Alert>
 		</span>
@@ -178,7 +195,7 @@ function Addherb() {
 	const handleSubmit = (e) => {
 		e.preventDefault();
 
-		if (thaiName && info) {
+		if (thaiName && info && attribute) {
 			db.collection("herbs")
 				.add({
 					userDisplayName: user.displayName,
@@ -200,6 +217,7 @@ function Addherb() {
 				});
 		} else {
 			setError(info_alert);
+			setOpenSnackbar(true);
 			setTimeout(() => {
 				setError(null);
 			}, 3000);
@@ -320,6 +338,9 @@ function Addherb() {
 		}
 	};
 
+	function SnackbarAlert(props) {
+		return <MuiAlert className={classes.snackbar} elevation={6} variant="filled" {...props} />;
+	}
 	const ConfirmBack = () => {
 		return (
 			<span>
@@ -473,7 +494,7 @@ function Addherb() {
 								<br />
 							</div>
 							<br />
-							{uploadNoti !== null && <div>{uploadNoti}</div>}
+							<div>{uploadNoti !== null && <div>{uploadNoti}</div>}</div>
 							<Typography className={classes.title}>รูปสมุนไพร</Typography>
 							<div>
 								<input
@@ -566,6 +587,21 @@ function Addherb() {
 									>
 										<Typography>บันทึก</Typography>
 									</Button>
+									<Snackbar
+										open={openSnackbar}
+										autoHideDuration={6000}
+										onClose={handleCloseSnackbar}
+									>
+										<SnackbarAlert
+											onClose={handleCloseSnackbar}
+											severity="warning"
+										>
+											<Typography>
+												ในการเพิ่มข้อมูลสมุนไพรเข้าสู่ระบบ
+												จำเป็นต้องเพิ่มชื่อสมุนไพรและข้อมูลพื้นฐานของสมุนไพร!!!
+											</Typography>
+										</SnackbarAlert>
+									</Snackbar>
 								</Grid>
 								<Grid
 									item

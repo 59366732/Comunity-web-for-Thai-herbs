@@ -18,13 +18,13 @@ import Header from "../component/customs/components/header";
 const theme = createMuiTheme(themeFile);
 
 function MyApp({ Component, pageProps }) {
-	React.useEffect(() => {
-		// Remove the server-side injected CSS.
-		const jssStyles = document.querySelector("#jss-server-side");
-		if (jssStyles) {
-			jssStyles.parentElement.removeChild(jssStyles);
-		}
-	}, []);
+	// React.useEffect(() => {
+	// 	// Remove the server-side injected CSS.
+	// 	const jssStyles = document.querySelector("#jss-server-side");
+	// 	if (jssStyles) {
+	// 		jssStyles.parentElement.removeChild(jssStyles);
+	// 	}
+	// }, []);
 	return (
 		<React.Fragment>
 			<Header />

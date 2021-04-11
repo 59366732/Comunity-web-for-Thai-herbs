@@ -50,6 +50,12 @@ const frameStyles = {
 	marginLeft: "auto",
 };
 
+import styled from "styled-components";
+import NoSsr from "@material-ui/core/NoSsr";
+import { palette, spacing, typography } from "@material-ui/system";
+const TitleBox = styled.div`
+	${palette}${spacing}${typography}
+`;
 const useStyles = makeStyles((theme) => ({
 	root: {
 		flexGrow: 1,
@@ -122,6 +128,12 @@ function limitContent(string, limit) {
 }
 
 const history = (props) => {
+
+	//test
+	const main_id = props.main_id;
+	console.log(main_id);
+
+
 	const [fullWidth, setFullWidth] = React.useState(true);
 	const classes = useStyles();
 	const { user, setUser } = useContext(UserContext);
@@ -217,8 +229,8 @@ const history = (props) => {
 
 			db.collection("vote").add({
 				uid: user.uid,
-				// herbid: hisid,
-				// voted: true,
+				herbid: hisid,
+				voted: true,
 			});
 
 			return;
@@ -303,7 +315,21 @@ const history = (props) => {
 							alignItems="center"
 						>
 							<div className={classes.title}>
-								<Typography variant="h4">ประวัติการแก้ไข</Typography>
+								<NoSsr>
+									<Box
+										color="primary.main"
+										bgcolor="background.paper"
+										fontFamily="fontFamily"
+										fontSize={{
+											xs: "h6.fontSize",
+											sm: "h4.fontSize",
+											md: "h3.fontSize",
+										}}
+										p={{ xs: 2, sm: 3, md: 4 }}
+									>
+										ประวัติการแก้ไข
+									</Box>
+								</NoSsr>
 							</div>
 						</Grid>
 						<div
@@ -313,7 +339,7 @@ const history = (props) => {
 						>
 							{historys.map((history) => (
 								<div key={history.id}>
-									<div  style={{ display: "inline" }}>
+									<div style={{ display: "inline" }}>
 										<ListItem variant="outlined" button divider>
 											<li style={{ width: "fit-content" }}>
 												<Link
@@ -330,7 +356,7 @@ const history = (props) => {
 															className="txt"
 															style={{ color: "#007FFF", display: "inline" }}
 														>
-															{limitContent(history.thaiName, 30)}
+															{limitContent(history.thaiName, 35)}
 														</Typography>
 														<Typography style={{ display: "inline" }}>
 															&nbsp;ถูกแก้ไขเมื่อ&nbsp;

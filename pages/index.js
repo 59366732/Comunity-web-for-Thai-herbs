@@ -8,6 +8,8 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { useRouter } from "next/router";
 import { storage } from "../database/firebase";
+import PropTypes from "prop-types";
+import Skeleton from "@material-ui/lab/Skeleton";
 
 import AddCircleOutlineIcon from "@material-ui/icons/AddCircleOutline";
 
@@ -62,15 +64,17 @@ const useStyles = makeStyles((theme) => ({
 
 function limitContent(string, limit) {
 	var dots = "...";
-	if (string.length > limit) {
+	if (string != null && string.length > limit) {
 		string = string.substring(0, limit) + dots;
+	} else {
+		string = string;
 	}
-
 	return string;
 }
-function Home() {
+function Home(props) {
 	const [herbs, setHerbs] = useState([]);
 	const [loggedIn, setLoggedIn] = useState(false);
+	const { loading = false } = props;
 
 	auth.onAuthStateChanged((user) => {
 		if (user) {
@@ -98,16 +102,20 @@ function Home() {
 			<div style={{ textAlign: "center" }}>
 				{loggedIn && (
 					<div style={{ marginBottom: "5px" }}>
-						<Button
-							width="200px"
-							color="primary"
-							className={classes.addHerbButton}
-						>
-							<AddCircleOutlineIcon />
+						{loading ? (
+							<Skeleton variant="rect" width={100} height={30} />
+						) : (
 							<Link href="/addherb">
-								<Typography>เพิ่มข้อมูลสมุนไพร</Typography>
+								<Button
+									width="200px"
+									color="primary"
+									className={classes.addHerbButton}
+								>
+									<AddCircleOutlineIcon />
+									<Typography>เพิ่มข้อมูลสมุนไพร</Typography>
+								</Button>
 							</Link>
-						</Button>
+						)}
 					</div>
 				)}
 				<div style={{ paddingTop: "5px" }}>
@@ -124,16 +132,20 @@ function Home() {
 								<Card>
 									<Link href="/herb/[id]" as={"/herb/" + herb.id}>
 										<CardActionArea>
-											<CardMedia
-												component="img"
-												alt=""
-												className={classes.media}
-												image={
-													herb.imgUrl ||
-													"https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse2.mm.bing.net%2Fth%3Fid%3DOIP.ouOFcEHOYh7Dj3JCmDUfhwAAAA%26pid%3DApi&f=1"
-												}
-												title="Herb Image"
-											/>
+											{loading ? (
+												<Skeleton variant="rect" height={160} />
+											) : (
+												<CardMedia
+													component="img"
+													alt=""
+													className={classes.media}
+													image={
+														herb.imgUrl ||
+														"https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse2.mm.bing.net%2Fth%3Fid%3DOIP.ouOFcEHOYh7Dj3JCmDUfhwAAAA%26pid%3DApi&f=1"
+													}
+													title="Herb Image"
+												/>
+											)}
 											<CardContent className={classes.title}>
 												<Typography
 													gutterBottom
@@ -151,26 +163,77 @@ function Home() {
 											variant="caption"
 											style={{ fontWeight: "bold", float: "left" }}
 										>
-											โดย:
+											{loading ? <Skeleton variant="text" /> : "โดย:"}
 										</Typography>
+										{loading ? (
+											<Typography variant="caption">
+												<Skeleton variant="text" />
+											</Typography>
+										) : (
+											<Typography
+												variant="caption"
+												style={{
+													color: "#007FFF",
+													textTransform: "capitalize",
+													margin: "0 0 0 2px",
+												}}
+											>
+												{limitContent(herb.userDisplayName, 11)}
+											</Typography>
+										)}
 										<Typography
 											variant="caption"
-											style={{ color: "#007FFF", textTransform: "capitalize" }}
+											style={{
+												fontWeight: "bold",
+												display: "inline",
+												margin: "0 0 0 3px",
+											}}
 										>
-											{limitContent(herb.userDisplayName, 11)}
+											{loading ? <Skeleton variant="text" /> : "เมื่อ:"}
 										</Typography>
+										{loading ? (
+											<Typography variant="caption">
+												<Skeleton variant="text" />
+											</Typography>
+										) : (
+											<Typography
+												variant="caption"
+												style={{
+													display: "inline",
+													color: "#007FFF",
+													textTransform: "capitalize",
+													margin: "0 0 0 2px",
+												}}
+											>
+												{new Date(herb.timestamp.seconds * 1000).toDateString()}
+											</Typography>
+										)}
 										<Typography
-											variant="caption"
-											style={{ fontWeight: "bold", display: "inline" }}
+											style={{
+												display: "inline",
+												fontWeight: "bold",
+												margin: "0 0 0 0",
+											}}
 										>
-											เมื่อ:
+											{loading ? <skeleton /> : <>,&ensp;</>}
 										</Typography>
-										<Typography
-											variant="caption"
-											style={{ color: "#007FFF", textTransform: "capitalize" }}
-										>
-											{new Date(herb.timestamp.seconds * 1000).toDateString()}
-										</Typography>
+										{loading ? (
+											<skeleton variant="text" />
+										) : (
+											<Typography
+												variant="caption"
+												style={{
+													color: "#007FFF",
+													display: "inline",
+													textTransform: "lowercase",
+													margin: "0 0 0 0px",
+												}}
+											>
+												{new Date(
+													herb.timestamp.seconds * 1000
+												).toLocaleTimeString()}
+											</Typography>
+										)}
 									</CardActions>
 								</Card>
 							</Grid>

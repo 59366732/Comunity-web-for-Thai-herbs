@@ -6,6 +6,8 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import { useRouter } from "next/router";
 import { UserContext } from "../../providers/UserProvider";
 import firebase from "firebase";
+import ReactLoading from "react-loading";
+import LinearProgress from "@material-ui/core/LinearProgress";
 import EditIcon from "@material-ui/icons/Edit";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import HistoryIcon from "@material-ui/icons/History";
@@ -292,6 +294,8 @@ export const getServerSideProps = async ({ query }) => {
 
 const Blog = (props) => {
 	const classes = useStyles();
+	const [progress, setProgress] = React.useState(0);
+	const [buffer, setBuffer] = React.useState(10);
 	const [openDelete, setOpenDelete] = React.useState(false);
 	const [openCancel, setOpenCancel] = React.useState(false);
 
@@ -322,6 +326,7 @@ const Blog = (props) => {
 	const [activeEdit, setActiveEdit] = useState(false);
 	const [loggedIn, setLoggedIn] = useState(false);
 	const [uploadNoti, setUploadNoti] = useState(null);
+	const [loading, setLoading] = useState(false);
 
 	//form
 	const [thaiNameEdit, setThaiNameEdit] = useState(props.thaiName);
@@ -397,7 +402,12 @@ const Blog = (props) => {
 				status: "ยังไม่ได้ยืนยัน",
 				voteCount: 0,
 			})
-			.then(setActiveEdit(false));
+			.then(
+				setActiveEdit(false),
+				setTimeout(() => {
+					setLoading(true), (window.location.href = "/herb/" + props.main_id);
+				}, 3000)
+			);
 	};
 
 	const handleCancel = (e) => {
@@ -546,7 +556,8 @@ const Blog = (props) => {
 					</DialogTitle>
 					<DialogContent>
 						<DialogContentText>
-							คุณต้องการ<a style={{color: "red"}}>ลบ</a>ข้อมูลสมุนไพรนี้ใช่หรือไม่?
+							คุณต้องการ<a style={{ color: "red" }}>ลบ</a>
+							ข้อมูลสมุนไพรนี้ใช่หรือไม่?
 							คลิก(ใช่)เพื่อลบข้อมูลสมุนไพรออกจากฐานข้อมูล
 							หรือคลิก(ไม่ใช่)เพื่อยกเลิกการลบ.
 						</DialogContentText>
@@ -580,7 +591,8 @@ const Blog = (props) => {
 					</DialogTitle>
 					<DialogContent>
 						<DialogContentText>
-							คุณต้องการ<a style={{color: "red"}}>ยกเลิก</a>การแก้ไขข้อมูลสมุนไพรนี้ใช่หรือไม่?
+							คุณต้องการ<a style={{ color: "red" }}>ยกเลิก</a>
+							การแก้ไขข้อมูลสมุนไพรนี้ใช่หรือไม่?
 							คลิก(ใช่)เพื่อกลับสู่หน้าข้อมูลสมุนไพร
 							หรือคลิก(ไม่ใช่)เพื่อดำเนินการแก้ไขต่อ.
 						</DialogContentText>
@@ -606,6 +618,7 @@ const Blog = (props) => {
 					<div>
 						{!activeEdit ? (
 							<div>
+								{loading && <ReactLoading type={"bars"} color={"black"} />}
 								<form>
 									<div className={classes.cardRoot}>
 										<div>
@@ -737,10 +750,11 @@ const Blog = (props) => {
 												</Typography>
 												<Grid item xs={12} sm={6} md={3}>
 													<img
+														component="img"
 														width="100%!important"
 														height="100%!important"
 														objectfit="contain"
-														src={ImgUrl || "http://via.placeholder.com/200"}
+														src={ImgUrl}
 														alt=""
 													/>
 												</Grid>
@@ -758,12 +772,11 @@ const Blog = (props) => {
 												</Typography>
 												<Grid item xs={12} sm={6} md={3}>
 													<img
+														component="img"
 														width="1080px!important"
 														height="auto!important"
 														objectfit="contain"
-														src={
-															chemBondUrl || "http://via.placeholder.com/200"
-														}
+														src={chemBondUrl}
 														alt=""
 													/>
 												</Grid>
@@ -778,10 +791,11 @@ const Blog = (props) => {
 												</Typography>
 												<Grid item xs={12} sm={6} md={3}>
 													<img
+														component="img"
 														width="1080px!important"
-														height="autopx!important"
+														height="auto!important"
 														objectfit="contain"
-														src={NMRUrl || "http://via.placeholder.com/200"}
+														src={NMRUrl}
 														alt=""
 													/>
 												</Grid>
@@ -830,6 +844,7 @@ const Blog = (props) => {
 										</div>
 									</div>
 								</form>
+								{loading && <ReactLoading type={"bars"} color={"black"} />}
 								<div
 									style={{
 										display: "flex",
@@ -990,7 +1005,6 @@ const Blog = (props) => {
 									<br />
 									<br />
 									<div>
-										{uploadNoti !== null && <div>{uploadNoti}</div>}
 										<Typography variant="h5" className={classes.titleEdit}>
 											รูปสมุนไพร
 										</Typography>

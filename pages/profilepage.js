@@ -141,7 +141,13 @@ function Profile_demo() {
 				{!activateEdit ? (
 					<React.Fragment>
 						<div className="profile-card__img">
-							<img src={user.photoURL || "https://res.cloudinary.com/dqcsk8rsc/image/upload/v1577268053/avatar-1-bitmoji_upgwhc.png"} alt="" />
+							<img
+								src={
+									user.photoURL ||
+									"https://res.cloudinary.com/dqcsk8rsc/image/upload/v1577268053/avatar-1-bitmoji_upgwhc.png"
+								}
+								alt=""
+							/>
 						</div>
 						<Grid container spacing={3}>
 							<Grid
@@ -298,7 +304,13 @@ function Profile_demo() {
 				) : (
 					<React.Fragment>
 						<div className="profile-card__img">
-							<img src={user.photoURL} alt="" />
+							<img
+								src={
+									user.photoURL ||
+									"https://res.cloudinary.com/dqcsk8rsc/image/upload/v1577268053/avatar-1-bitmoji_upgwhc.png"
+								}
+								alt=""
+							/>
 						</div>
 						<Grid container spacing={3}>
 							<Grid item xs={12} sm={6}>

@@ -354,9 +354,7 @@ const detail = (props) => {
 			.then(
 				setActiveEdit(false),
 				setTimeout(() => {
-					setLoading(true),
-						(window.location.href =
-							"/herb/" + props.main_id + "/history/history_list");
+					setLoading(true), (window.location.href = "/herb/" + props.main_id);
 				}, 3000)
 			);
 	};
@@ -691,13 +689,12 @@ const detail = (props) => {
 												</Typography>
 												<Grid item xs={12} sm={6} md={3}>
 													<img
+														component="img"
 														width="100%!important"
 														height="100%!important"
 														objectfit="contain"
-														src={
-															props.imgUrl || "http://via.placeholder.com/200"
-														}
-														alt="firebase-image"
+														src={props.imgUrl}
+														alt=""
 													/>
 												</Grid>
 											</CardContent>
@@ -711,14 +708,12 @@ const detail = (props) => {
 												</Typography>
 												<Grid item xs={12} sm={6} md={3}>
 													<img
+														component="img"
 														width="1080px!important"
-														height="autopx!important"
+														height="auto!important"
 														objectfit="contain"
-														src={
-															props.chemBondUrl ||
-															"http://via.placeholder.com/200"
-														}
-														alt="firebase-image"
+														src={props.chemBondUrl}
+														alt="No image"
 													/>
 												</Grid>
 											</CardContent>
@@ -732,13 +727,12 @@ const detail = (props) => {
 												</Typography>
 												<Grid item xs={12} sm={6} md={3}>
 													<img
+														component="img"
 														width="1080px!important"
-														height="autopx!important"
+														height="auto!important"
 														objectfit="contain"
-														src={
-															props.NMRUrl || "http://via.placeholder.com/200"
-														}
-														alt="firebase-image"
+														src={props.NMRUrl}
+														alt="No image"
 													/>
 												</Grid>
 											</CardContent>
@@ -786,6 +780,7 @@ const detail = (props) => {
 										</div>
 									</div>
 								</form>
+								{loading && <ReactLoading type={"bars"} color={"black"} />}
 								<div
 									style={{
 										display: "flex",

@@ -39,6 +39,14 @@ export default function CustomizedSelects() {
 					value={searchOption}
 					onChange={handleChange}
 					label="ตัวเลือกการค้นหา"
+					anchororigin={{
+						vertical: "bottom",
+						horizontal: "center",
+					}}
+					transformOrigin={{
+						vertical: "top",
+						horizontal: "center",
+					}}
 				>
 					<MenuItem value="">
 						<Typography>เลือก</Typography>

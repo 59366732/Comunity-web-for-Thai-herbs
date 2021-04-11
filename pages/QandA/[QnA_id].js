@@ -20,11 +20,17 @@ import CloseIcon from "@material-ui/icons/Close";
 import CancelIcon from "@material-ui/icons/Cancel";
 import Draggable, { DraggableCore } from "react-draggable";
 import Slide from "@material-ui/core/Slide";
+import ThumbUpAltIcon from "@material-ui/icons/ThumbUpAlt";
 
 import {
+	List,
+	ListItem,
+	ListItemText,
+	ListItemIcon,
 	Avatar,
 	Chip,
 	Snackbar,
+	IconButton,
 	Box,
 	Icon,
 	Paper,
@@ -62,7 +68,7 @@ const frameStyles = {
 	flexDirection: "column",
 	display: "flex",
 	justifyContent: "center",
-	border: "solid 1px #00b906",
+	// border: "solid 1px #00b906",
 	paddingTop: "20px",
 	paddingRight: "20px",
 	paddingBottom: "20px",
@@ -78,7 +84,7 @@ const replyBorder = {
 	flexDirection: "column",
 	display: "flex",
 	justifyContent: "center",
-	border: "solid 1px #00b906",
+	// border: "solid 1px #00b906",
 	paddingTop: "20px",
 	paddingRight: "20px",
 	paddingBottom: "20px",
@@ -164,6 +170,7 @@ const useStyles = makeStyles((theme) => ({
 	},
 	DAC: {
 		marginBottom: "30px",
+		padding: "0 0 10px 0",
 	},
 	DIC: {
 		marginBottom: "30px",
@@ -230,8 +237,16 @@ export const getServerSideProps = async ({ query }) => {
 		.doc(query.QnA_id)
 		.get()
 		.then((result) => {
-			content["title"] = result.data().title;
-			content["detail"] = result.data().detail;
+			content["postUserDisplayName"] = result.data().userDisplayName;
+			content["postTime"] = new Date(
+				result.data().timestamp.seconds * 1000
+			).toLocaleTimeString();
+			content["postDate"] = new Date(
+				result.data().timestamp.seconds * 1000
+			).toDateString();
+			content["postTitle"] = result.data().title;
+			content["postDetail"] = result.data().detail;
+			content["postLikeCount"] = result.data().likeCount;
 		})
 		.catch(function (error) {
 			console.log("Error getting documents: ", error);
@@ -239,16 +254,21 @@ export const getServerSideProps = async ({ query }) => {
 	return {
 		props: {
 			Question_id: content.Question_id,
-			title: content.title,
-			detail: content.detail,
+			questionOwner: content.postUserDisplayName,
+			questionTime: content.postTime,
+			questionDate: content.postDate,
+			questionTitle: content.postTitle,
+			questionDetail: content.postDetail,
+			questionLikeCount: content.postLikeCount,
 		},
 	};
 };
 
-const QnApost = async (props) => {
+const QnApost = (props) => {
 	const classes = useStyles();
 
 	const { user, setUser } = useContext(UserContext);
+	const [posts, setPosts] = useState([]);
 	const [comments, setComments] = useState([]);
 	const router = useRouter();
 
@@ -259,17 +279,174 @@ const QnApost = async (props) => {
 		db.collection("QnA")
 			.doc(props.Question_id)
 			.collection("comments")
-			.orderBy("timestamp")
+			.orderBy("timestamp", "desc")
 			.onSnapshot((snap) => {
+				const post = snap.docs.map((doc) => ({
+					id: doc.id,
+					...doc.data(),
+				}));
 				const comment = snap.docs.map((doc) => ({
 					id: doc.id,
 					...doc.data(),
 				}));
+				setPosts(post);
 				setComments(comment);
 			});
 	}, []);
-	console.log(props.title);
-	const thumbUp = async (commentid) => {
+
+	// var Like;
+	const Post_thumbUp = async (postid) => {
+		let data = await db
+			.collection("LikePost")
+			.where("postid", "==", postid)
+			.where("uid", "==", user.uid)
+			.limit(1)
+			.get();
+
+		const mapData = data.docs.map((doc) => ({
+			id: doc.id,
+			...doc.data(),
+		}));
+
+		if (mapData.length != 0) {
+			//there is mapData
+			return Post_voteORnot(mapData, postid);
+		} else {
+			//there isn't mapData
+			const mapData = null;
+			return Post_voteORnot(mapData, postid);
+		}
+	};
+
+	const Post_voteORnot = (test, postid) => {
+		//increment
+		const Increment = firebase.firestore.FieldValue.increment(+1);
+		//decrement
+		const Decrement = firebase.firestore.FieldValue.increment(-1);
+
+		if (test == null) {
+			db.collection("QnA").doc(postid).update({ likeCount: Increment });
+			db.collection("LikePost").add({
+				uid: user.uid,
+				postid: postid,
+				liked: true,
+			});
+			db.collection("QnA")
+				.doc(postid)
+				.get()
+				.then(function (doc) {
+					if (doc.exists) {
+						// console.log("Document data:", doc.data());
+						const likeCount = likeCount;
+						if (likeCount == 0) {
+							Like = likeCount;
+						} else {
+							Like = likeCount + 1;
+						}
+						return Like;
+					} else {
+						// doc.data() will be undefined in this case
+						console.log("No such document!");
+					}
+				})
+				.catch(function (error) {
+					console.log("Error getting document:", error);
+				});
+			return;
+		}
+		test.map((dt) => {
+			if (dt.liked == true) {
+				db.collection("QnA").doc(postid).update({ likeCount: Decrement });
+
+				db.collection("LikePost").doc(dt.id).update({ liked: false });
+
+				db.collection("QnA")
+					.doc(postid)
+					.get()
+					.then(function (doc) {
+						if (doc.exists) {
+							console.log("Document data:", doc.data());
+							var Like1 = doc.data();
+							console.log(Like1.toString());
+						} else {
+							// doc.data() will be undefined in this case
+							console.log("No such document!");
+						}
+					})
+					.catch(function (error) {
+						console.log("Error getting document:", error);
+					});
+				console.log(postid);
+				async ({ query }) => {
+					const content = {};
+					content["Question_id"] = query.QnA_id;
+					await db
+						.collection("QnA")
+						.doc(query.QnA_id)
+						.get()
+						.then((result) => {
+							content["newLikeCount"] = result.data().likeCount;
+						})
+						.catch(function (error) {
+							console.log("Error getting documents: ", error);
+						});
+					return {
+						props: {
+							Like2: content.newLikeCount,
+						},
+					};
+				};
+			} else if (dt.liked == false) {
+				db.collection("QnA").doc(postid).update({ likeCount: Increment });
+				db.collection("LikePost").doc(dt.id).update({ liked: true });
+				db.collection("QnA")
+					.doc(postid)
+					.get()
+					.then(function (doc) {
+						if (doc.exists) {
+							console.log("Document data:", doc.data());
+							var Like1 = doc.data();
+							console.log(Like1.toString());
+						} else {
+							// doc.data() will be undefined in this case
+							console.log("No such document!");
+						}
+					})
+					.catch(function (error) {
+						console.log("Error getting document:", error);
+					});
+				console.log(postid);
+				async ({ query }) => {
+					const content = {};
+					content["Question_id"] = query.QnA_id;
+					await db
+						.collection("QnA")
+						.doc(query.QnA_id)
+						.get()
+						.then((result) => {
+							content["newLikeCount"] = result.data().likeCount;
+						})
+						.catch(function (error) {
+							console.log("Error getting documents: ", error);
+						});
+					return {
+						props: {
+							Like2: content.newLikeCount,
+						},
+					};
+				};
+			}
+		});
+	};
+	const LikeCount = (props) => {
+		const LikeNum = props.Like2;
+		return (
+			<span>
+				<Typography>{LikeNum}</Typography>
+			</span>
+		);
+	};
+	const Comment_thumbUp = async (commentid) => {
 		let data = await db
 			.collection("LikeComment")
 			.where("commentid", "==", commentid)
@@ -284,15 +461,14 @@ const QnApost = async (props) => {
 
 		if (mapData.length != 0) {
 			//there is mapData
-			return voteORnot(mapData, commentid);
+			return Comment_voteORnot(mapData, commentid);
 		} else {
 			//there isn't mapData
 			const mapData = null;
-			return voteORnot(mapData, commentid);
+			return Comment_voteORnot(mapData, commentid);
 		}
 	};
-
-	const voteORnot = (test, commentid) => {
+	const Comment_voteORnot = (test, commentid) => {
 		//increment
 		const Increment = firebase.firestore.FieldValue.increment(+1);
 		//decrement
@@ -345,7 +521,6 @@ const QnApost = async (props) => {
 	};
 
 	const handleCloseConfirm = () => {
-		// window.location.href = "/signin";
 		setOpen(false);
 	};
 
@@ -396,7 +571,8 @@ const QnApost = async (props) => {
 					<DialogContent>
 						<DialogContentText>
 							คุณต้องเข้าสู่ระบบก่อนเพื่อแสดงความคิดเห็น
-							คลิก(ใช่)เพื่อทำการเข้าสู้ระบบ หรือคลิก(ไม่ใช่)เพื่อปิดหน้าต่างนี้.
+							คลิก(ใช่)เพื่อทำการเข้าสู้ระบบ
+							หรือคลิก(ไม่ใช่)เพื่อปิดหน้าต่างนี้.
 						</DialogContentText>
 					</DialogContent>
 					<DialogActions>
@@ -415,11 +591,11 @@ const QnApost = async (props) => {
 	};
 
 	return (
-		<div>
+		<React.Fragment>
 			<Container component="main">
 				<CssBaseline />
 				<Box style={frameStyles}>
-					<form>
+					<div>
 						<div className={classes.cardRoot}>
 							<div>
 								<Grid container spacing={3}>
@@ -431,7 +607,25 @@ const QnApost = async (props) => {
 													:&nbsp;
 												</Typography>
 												<Typography className={classes.userName}>
-													{props.userDisplayName}
+													{props.questionOwner}
+												</Typography>
+											</CardActionArea>
+										</Card>
+										<br />
+										<Card className={classes.userCard}>
+											<CardActionArea>
+												<Typography className={classes.title}>เมื่อ</Typography>
+												<Typography className={classes.space}>
+													:&nbsp;
+												</Typography>
+												<Typography className={classes.userName}>
+													{props.questionDate}
+												</Typography>
+												<Typography className={classes.space}>
+													,&nbsp;
+												</Typography>
+												<Typography className={classes.userName}>
+													{props.questionTime}
 												</Typography>
 											</CardActionArea>
 										</Card>
@@ -448,18 +642,33 @@ const QnApost = async (props) => {
 										</Typography>
 										<Typography className={classes.space}>:&nbsp;</Typography>
 										<Typography className={classes.content}>
-											{props.title}
+											{props.questionTitle}
 										</Typography>
 									</div>
 									<div>
 										<Typography className={classes.title}>
 											รายละเอียดคำถาม:
 										</Typography>
+										<Typography className={classes.space}>:&nbsp;</Typography>
 										<Typography className={classes.questionDetail}>
-											{props.detail}
+											{props.questionDetail}
 										</Typography>
 									</div>
 								</CardContent>
+								<CardActions style={{ display: "flex" }}>
+									<IconButton onClick={() => Post_thumbUp(props.Question_id)}>
+										<ThumbUpAltIcon />
+									</IconButton>
+									<div style={{ margin: "0 0 0 0" }}>
+										<Typography>{props.questionLikeCount}</Typography>
+										<Typography className={classes.space}>&nbsp;</Typography>
+										<Typography>Like</Typography>
+									</div>
+								</CardActions>
+								{/* <div>
+									<Typography>Here:</Typography>
+									<LikeCount />
+								</div> */}
 							</Card>
 						</div>
 						<div
@@ -554,35 +763,60 @@ const QnApost = async (props) => {
 						) : null}
 						<div className={classes.alert} ref={container} />
 						<br />
-						{comments.map((comment) => (
-							<div
-								key={comment.id}
-								className={classes.DAC}
-								style={{ marginLeft: "50px", marginTop: "10px" }}
-							>
-								<Card
-									className={classes.attributeCard}
-									style={{ marginTop: "10px" }}
-								>
-									<CardContent>
-										<Typography className={classes.title}>
-											ความคิดเห็นที่ x โดย
-										</Typography>
-										<Typography className={classes.space}>:&nbsp;</Typography>
-										<Typography className={classes.userName}>
-											{comment.userDisplayName}
-										</Typography>
-										<Typography className={classes.questionDetail}>
-											{comment.comment}
-										</Typography>
-									</CardContent>
-								</Card>
-							</div>
-						))}
-					</form>
+						<div>
+							{comments.map((comment) => (
+								<div key={comment.id} style={{ margin: "10px 0 30px 50px" }}>
+									<Card
+										className={classes.attributeCard}
+										style={{ marginTop: "10px" }}
+									>
+										<CardContent>
+											<Typography className={classes.title}>
+												ความคิดเห็นที่ x โดย
+											</Typography>
+											<Typography className={classes.space}>:&nbsp;</Typography>
+											<Typography className={classes.userName}>
+												{comment.userDisplayName}
+											</Typography>
+											<Typography className={classes.space}>&nbsp;</Typography>
+											<Typography className={classes.title}>เมื่อ</Typography>
+											<Typography className={classes.space}>:&nbsp;</Typography>
+											<Typography className={classes.userName}>
+												{new Date(
+													comment.timestamp.seconds * 1000
+												).toDateString()}
+											</Typography>
+											<Typography className={classes.space}>,&nbsp;</Typography>
+											<Typography className={classes.userName}>
+												{new Date(
+													comment.timestamp.seconds * 1000
+												).toLocaleTimeString()}
+											</Typography>
+											<br />
+											<Typography className={classes.questionDetail}>
+												&nbsp;{comment.comment}
+											</Typography>
+										</CardContent>
+										<CardActions style={{ display: "flex" }}>
+											<IconButton onClick={() => Comment_thumbUp(comment.id)}>
+												<ThumbUpAltIcon />
+											</IconButton>
+											<div style={{ margin: "0 0 0 0" }}>
+												<Typography>{comment.likeCount}</Typography>
+												<Typography className={classes.space}>
+													&nbsp;
+												</Typography>
+												<Typography>Like</Typography>
+											</div>
+										</CardActions>
+									</Card>
+								</div>
+							))}
+						</div>
+					</div>
 				</Box>
 			</Container>
-		</div>
+		</React.Fragment>
 	);
 };
 

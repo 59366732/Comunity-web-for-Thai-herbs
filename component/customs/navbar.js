@@ -9,6 +9,9 @@ import HideOnScroll from "./components/hideonscroll";
 import SideDrawer from "./components/sidedrawer";
 import BackToTop from "./components/backtotop";
 
+import PropTypes from "prop-types";
+import Skeleton from "@material-ui/lab/Skeleton";
+
 import {
 	Avatar,
 	Divider,
@@ -153,15 +156,17 @@ const NotiStyledBadge = withStyles((theme) => ({
 	},
 }))(Badge);
 
-export default function Navbar() {
+export default function Navbar(props) {
 	const { user, setUser } = useContext(UserContext);
 	const [loggedIn, setLoggedIn] = useState(false);
+	const { loading = false } = props;
+
 
 	const classes = useStyles();
 	const [open, setOpen] = React.useState(false);
 	const [openLogout, setOpenLogout] = React.useState(false);
 	const [anchorEl, setAnchorEl] = React.useState(null);
-	
+
 	const handleClickOpenLogout = () => {
 		setOpenLogout(true);
 	};

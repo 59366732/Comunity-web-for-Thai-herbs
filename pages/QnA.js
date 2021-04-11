@@ -148,6 +148,7 @@ const QandA = () => {
 	};
 
 	const { user, setUser } = useContext(UserContext);
+	const [response, setResponse] = useState([]);
 	const [posts, setPosts] = useState([]);
 	const [loggedIn, setLoggedIn] = useState(false);
 
@@ -252,7 +253,10 @@ const QandA = () => {
 					PaperComponent={PaperComponent}
 					aria-labelledby="draggable-dialog-title"
 				>
-					<MuiDialogTitle style={{ cursor: "move" }} id="draggable-dialog-title">
+					<MuiDialogTitle
+						style={{ cursor: "move" }}
+						id="draggable-dialog-title"
+					>
 						<Typography>เข้าสู่ระบบ?</Typography>
 					</MuiDialogTitle>
 					<MuiDialogContent>
@@ -285,32 +289,47 @@ const QandA = () => {
 						<ListItem alignItems="flex-start">
 							<ListItemIcon style={{ padding: "0 10px 0 0" }}>
 								<div style={{ display: "block" }}>
-									<Button>
-										<ThumbsUpDownIcon onClick={() => thumbUp(post.id)} />
+									<Button onClick={() => thumbUp(post.id)}>
+										<ThumbsUpDownIcon />
 									</Button>
-									<Typography style={{ display: "flex", flexDirection: "column", textAlign: "center" }}>
+									<Typography
+										style={{
+											display: "flex",
+											flexDirection: "column",
+											textAlign: "center",
+										}}
+									>
 										{post.likeCount}
 									</Typography>
 								</div>
 							</ListItemIcon>
 							<ListItemIcon style={{ padding: "0 0 0 10px" }}>
-								<div style={{ display: "flex", flexDirection: "column", textAlign: "center", padding: "10px 0 0 0" }}>
+								<div
+									style={{
+										display: "flex",
+										flexDirection: "column",
+										textAlign: "center",
+										padding: "10px 0 0 0",
+									}}
+								>
 									<QuestionAnswerIcon />
-									<Typography >1</Typography>
+									<Typography>1</Typography>
 								</div>
 							</ListItemIcon>
 							<ListItemText
 								primary={
-									<Link href="./QandA/[QnA_id]" as={"/QandA/" + post.id}>
-										<a>
-											<Typography
-												itemProp="hello"
-												style={{ fontWeight: "bold", wordWrap: "break-word" }}
-											>
-												{limitContent(post.title, 100)}
-											</Typography>
-										</a>
-									</Link>
+									<React.Fragment>
+										<Link href="./QandA/[QnA_id]" as={"/QandA/" + post.id}>
+											<a>
+												<Typography
+													itemProp="hello"
+													style={{ fontWeight: "bold", wordWrap: "break-word" }}
+												>
+													{limitContent(post.title, 100)}
+												</Typography>
+											</a>
+										</Link>
+									</React.Fragment>
 								}
 								secondary={
 									<React.Fragment>
@@ -326,7 +345,7 @@ const QandA = () => {
 										<br />
 										<Typography
 											variant="caption"
-											style={{ fontWeight: "bold", float: "left" }}
+											style={{ margin: "4px 0 0 0", fontWeight: "bold", float: "left" }}
 										>
 											โดย:
 										</Typography>
@@ -351,12 +370,22 @@ const QandA = () => {
 										<Typography
 											variant="caption"
 											style={{
+												display: "inline",
 												color: "#007FFF",
 												textTransform: "capitalize",
 											}}
 										>
 											{new Date(post.timestamp.seconds * 1000).toDateString()}
-											,&ensp;
+										</Typography>
+										<Typography
+											style={{ display: "inline", fontWeight: "bold" }}
+										>
+											,&nbsp;
+										</Typography>
+										<Typography
+											variant="caption"
+											style={{ color: "#007FFF", display: "inline", textTransform: "lowercase", }}
+										>
 											{new Date(
 												post.timestamp.seconds * 1000
 											).toLocaleTimeString()}
@@ -388,7 +417,7 @@ const QandA = () => {
 								spacing={1}
 								style={{ display: "flex", justifyContent: "space-between" }}
 							>
-								<div>
+								{/* <div>
 									<ListItem>
 										<Button>
 											<Typography className={classes.titleText}>
@@ -405,7 +434,7 @@ const QandA = () => {
 											</Typography>
 										</Button>
 									</ListItem>
-								</div>
+								</div> */}
 								{loggedIn ? <AddQuestion /> : <LoginPopup />}
 								<div className={classes.search}>
 									<TextField
