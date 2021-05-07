@@ -80,6 +80,13 @@ function Profile_demo() {
 	const [activateEdit, setActiveEdit] = useState(false);
 	const [displayName, setDisplayName] = useState(user.displayName);
 
+	auth.onAuthStateChanged((user) => {
+		if (user) {
+		} else {
+			window.location.href = "/";
+		}
+	});
+
 	const toggleEdit = (e) => {
 		e.preventDefault();
 		setActiveEdit(true);
@@ -336,9 +343,10 @@ function Profile_demo() {
 									justifyContent="flex-start"
 								>
 									<TextField
+										fullWidth
 										label="Editable"
 										variant="outlined"
-										defaultValue={displayName}
+										defaultValue={user.displayName}
 										onChange={(e) => setDisplayName(e.target.value)}
 										placeholder={displayName}
 									/>
@@ -366,6 +374,7 @@ function Profile_demo() {
 									justifyContent="flex-start"
 								>
 									<TextField
+										fullWidth
 										id="outlined-read-only-input"
 										label="Read Only"
 										InputProps={{
@@ -398,6 +407,7 @@ function Profile_demo() {
 									justifyContent="flex-start"
 								>
 									<TextField
+										fullWidth
 										id="outlined-read-only-input"
 										label="Read Only"
 										InputProps={{
@@ -423,13 +433,14 @@ function Profile_demo() {
 									</Typography>
 								</Box>
 							</Grid>
-							<Grid container alignItems="center" item xs={12} sm={6}>
+							<Grid container item xs={12} sm={6}>
 								<Box
 									display="flex"
 									flexDirection="row"
 									justifyContent="flex-start"
 								>
 									<TextField
+										fullWidth
 										className={classes.content}
 										id="outlined-read-only-input"
 										label="Read Only"

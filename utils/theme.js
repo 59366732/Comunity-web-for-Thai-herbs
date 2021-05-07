@@ -77,7 +77,7 @@ export default {
 		MuiTextField: {
 			root: {
 				// backgroundColor: "none",
-				fullwidth: true,
+				// fullWidth: true,
 			},
 		},
 		MuiButton: {

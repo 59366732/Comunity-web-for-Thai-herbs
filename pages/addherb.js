@@ -8,6 +8,7 @@ import { UserContext } from "../providers/UserProvider";
 import { makeStyles } from "@material-ui/core/styles";
 import { styled } from "@material-ui/core/styles";
 import { Alert } from "@material-ui/lab/";
+import NoSsr from "@material-ui/core/NoSsr";
 import {
 	Icon,
 	Box,
@@ -97,7 +98,6 @@ const useStyles = makeStyles((theme) => ({
 	},
 }));
 
-
 function Addherb() {
 	const classes = useStyles();
 	const [openBack, setOpenBack] = React.useState(false);
@@ -176,7 +176,7 @@ function Addherb() {
 
 		db.collection("herbs").doc(herb_id).collection("historys").add({
 			herb_id: data.id,
-			userDisplayName: data.data().userDisplayName,
+			user_id: data.data().user_id,
 			thaiName: data.data().thaiName,
 			engName: data.data().engName,
 			sciName: data.data().sciName,
@@ -198,7 +198,7 @@ function Addherb() {
 		if (thaiName && info && attribute) {
 			db.collection("herbs")
 				.add({
-					userDisplayName: user.displayName,
+					user_id: user.uid,
 					thaiName: thaiName,
 					engName: engName,
 					sciName: sciName,
@@ -339,7 +339,14 @@ function Addherb() {
 	};
 
 	function SnackbarAlert(props) {
-		return <MuiAlert className={classes.snackbar} elevation={6} variant="filled" {...props} />;
+		return (
+			<MuiAlert
+				className={classes.snackbar}
+				elevation={6}
+				variant="filled"
+				{...props}
+			/>
+		);
 	}
 	const ConfirmBack = () => {
 		return (
@@ -357,8 +364,9 @@ function Addherb() {
 					</DialogTitle>
 					<DialogContent>
 						<DialogContentText>
-							คุณต้องการยกเลิกการเพิ่มข้อมูลสมุนไพรนี้ใช่หรือไม่?
-							คลิก(ใช่)เพื่อกลับสู่หน้าข้อมูลสมุนไพร
+							คุณต้องการ
+							<a style={{ color: "red" }}>ยกเลิกการเพิ่มข้อมูลสมุนไพร</a>
+							นี้ใช่หรือไม่? คลิก(ใช่)เพื่อกลับสู่หน้าข้อมูลสมุนไพร
 							หรือคลิก(ไม่ใช่)เพื่อดำเนินการเพิ่มข้อมูลสมุนไพรต่อ.
 						</DialogContentText>
 					</DialogContent>
@@ -385,16 +393,25 @@ function Addherb() {
 				<CssBaseline />
 				<Box style={frameStyles}>
 					<div>
-						<Typography
-							variant="h3"
-							style={{
-								margin: "0 0 0 30px",
-								padding: "0 0 10px 0",
-								position: "relative",
-							}}
-						>
-							เพิ่มข้อมูลสมุนไพรไทย
-						</Typography>
+						<NoSsr>
+							<Box
+								fontFamily="h6.fontFamily"
+								fontSize={{
+									xs: "h6.fontSize",
+									sm: "h4.fontSize",
+									md: "h3.fontSize",
+								}}
+								p={{ xs: 2, sm: 3, md: 4 }}
+								style={{
+									margin: "0 0 0 30px",
+									padding: "0 0 10px 0",
+									position: "relative",
+									fontWeight: "bold",
+								}}
+							>
+								เพิ่มข้อมูลสมุนไพรไทย
+							</Box>
+						</NoSsr>
 						{error !== null && <div>{error}</div>}
 						<form>
 							<div>
@@ -563,66 +580,63 @@ function Addherb() {
 							style={{
 								display: "flex",
 								flexWrap: "wrap",
-								justifyContent: "center",
+								justifyContent: "space-between",
 							}}
 						>
-							<Grid
+							{/* <Grid
 								container
 								spacing={1}
 								style={{ display: "flex", justifyContent: "center" }}
+							> */}
+							{/* <Grid
+									item
+									xs={3}
+									container
+									spacing={1}
+									style={{ display: "flex", justifyContent: "center" }}
+								> */}
+							<Button
+								variant="contained"
+								color="primary"
+								onClick={handleSubmit}
+								type="submit"
+								startIcon={<SaveIcon />}
 							>
-								<Grid
+								<Typography>บันทึก</Typography>
+							</Button>
+							<Snackbar
+								open={openSnackbar}
+								autoHideDuration={6000}
+								onClose={handleCloseSnackbar}
+							>
+								<SnackbarAlert onClose={handleCloseSnackbar} severity="warning">
+									<Typography>
+										ในการเพิ่มข้อมูลสมุนไพรเข้าสู่ระบบ
+										จำเป็นต้องเพิ่มชื่อสมุนไพรและข้อมูลพื้นฐานของสมุนไพร!!!
+									</Typography>
+								</SnackbarAlert>
+							</Snackbar>
+							{/* </Grid> */}
+							{/* <Grid
 									item
 									xs={3}
 									container
 									spacing={1}
 									style={{ display: "flex", justifyContent: "center" }}
-								>
-									<Button
-										variant="contained"
-										color="primary"
-										onClick={handleSubmit}
-										type="submit"
-										startIcon={<SaveIcon />}
-									>
-										<Typography>บันทึก</Typography>
-									</Button>
-									<Snackbar
-										open={openSnackbar}
-										autoHideDuration={6000}
-										onClose={handleCloseSnackbar}
-									>
-										<SnackbarAlert
-											onClose={handleCloseSnackbar}
-											severity="warning"
-										>
-											<Typography>
-												ในการเพิ่มข้อมูลสมุนไพรเข้าสู่ระบบ
-												จำเป็นต้องเพิ่มชื่อสมุนไพรและข้อมูลพื้นฐานของสมุนไพร!!!
-											</Typography>
-										</SnackbarAlert>
-									</Snackbar>
-								</Grid>
-								<Grid
-									item
-									xs={3}
-									container
-									spacing={1}
-									style={{ display: "flex", justifyContent: "center" }}
-								>
-									<Button
-										position="relative"
-										color="default"
-										variant="outlined"
-										startIcon={<ArrowBackIcon />}
-										type="secondary"
-										onClick={handleClickOpenBack}
-									>
-										<Typography>กลับ</Typography>
-									</Button>
-									<ConfirmBack />
-								</Grid>
-							</Grid>
+								> */}
+							<Button
+								position="relative"
+								color="default"
+								variant="outlined"
+								startIcon={<ArrowBackIcon />}
+								type="secondary"
+								onClick={handleClickOpenBack}
+							>
+								<Typography>กลับ</Typography>
+							</Button>
+							<ConfirmBack />
+							{/* </Grid> */}
+							{/* </Grid> */}
 						</div>
 					</div>
 				</Box>

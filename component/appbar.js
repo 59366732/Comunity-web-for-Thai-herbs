@@ -1,10 +1,23 @@
 import Link from "next/link";
+import { useState, useContext } from "react";
 import Navbar0 from "./customs/navbar";
+import { auth, firestore, } from "../database/firebase";
+import { UserContext } from "../providers/UserProvider";
+import { AppBar, Button } from "@material-ui/core";
 import Toolbar from "@material-ui/core/Toolbar";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
 export default function Navbar() {
-	function Navbar1() {
+	const { user, setUser } = useContext(UserContext);
+	const [loggedIn, setLoggedIn] = useState(false);
+	auth.onAuthStateChanged((user) => {
+		if (user) {
+			setLoggedIn(true);
+		} else {
+			setLoggedIn(false);
+		}
+	});
+	const Navbar1 = () => {
 		return (
 			<AppBar>
 				<Toolbar>
@@ -46,7 +59,58 @@ export default function Navbar() {
 				</Toolbar>
 			</AppBar>
 		);
-	}
+	};
+	const Navbar2 = () => {
+		return (
+			<AppBar>
+				<Toolbar className="navbar-container">
+					<h3>เว็บชุมชนสมุนไพรไทย</h3>
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<Button color="inherit">
+						<Link href="/">
+							<a>หน้าแรก</a>
+						</Link>
+					</Button>
+					<Button color="inherit">
+						<Link href="/search">
+							<a>ค้นหา</a>
+						</Link>
+					</Button>
+					<Button color="inherit">
+						<Link href="/QnA">
+							<a>ถาม-ตอบ</a>
+						</Link>
+					</Button>
+					<Button color="inherit">
+						{!loggedIn ? (
+							<Link href="/signup">
+								<a>สมัครสมาชิก</a>
+							</Link>
+						) : (
+							<Link href="/profilepage">
+								<a>สวัสดี{user.displayName} !</a>
+							</Link>
+						)}
+					</Button>
+					<Button color="inherit">
+						{!loggedIn ? (
+							<Link href="/signin">
+								<a>เข้าสู่ระบบ</a>
+							</Link>
+						) : (
+							<div
+								onClick={() => {
+									auth.signOut();
+								}}
+							>
+								<a>ออกจากระบบ</a>
+							</div>
+						)}
+					</Button>
+				</Toolbar>
+			</AppBar>
+		);
+	};
 	return (
 		<React.Fragment>
 			<Navbar0 />

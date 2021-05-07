@@ -4,7 +4,16 @@
 			"path": "."
 		},
 		{
-			"path": "..\\LatestThaiHerbs"
+			"path": "..\\getting_started_nextjs"
+		},
+		{
+			"path": "..\\nextjs-blog"
+		},
+		{
+			"path": "..\\react-blog"
+		},
+		{
+			"path": "..\\Thaiherb-update10"
 		}
 	],
 	"settings": {

@@ -248,7 +248,7 @@ export const getServerSideProps = async ({ query }) => {
 		.then(function (querySnapshot) {
 			querySnapshot.forEach(function (result) {
 				content["id"] = result.id;
-				content["userDisplayName"] = result.data().userDisplayName;
+				content["user_id"] = result.data().user_id;
 				content["thaiName"] = result.data().thaiName;
 				content["engName"] = result.data().engName;
 				content["sciName"] = result.data().sciName;
@@ -275,7 +275,7 @@ export const getServerSideProps = async ({ query }) => {
 		props: {
 			main_id: content.main_id,
 			id: content.id,
-			userDisplayName: content.userDisplayName,
+			user_id: content.user_id,
 			thaiName: content.thaiName,
 			engName: content.engName,
 			sciName: content.sciName,
@@ -315,11 +315,6 @@ const Blog = (props) => {
 	};
 
 	dayjs.extend(relativeTime);
-	// const d = new Date(props.timestamp);
-	const d = props.timestamp;
-	// console.log(dd);
-	const date = props.timestamp;
-	// const time = props.timestamp;
 	const router = useRouter();
 	const { user, setUser } = useContext(UserContext);
 
@@ -327,6 +322,8 @@ const Blog = (props) => {
 	const [loggedIn, setLoggedIn] = useState(false);
 	const [uploadNoti, setUploadNoti] = useState(null);
 	const [loading, setLoading] = useState(false);
+	const [displayName, setDisplayName] = useState("");
+	const [level, setLevel] = useState("");
 
 	//form
 	const [thaiNameEdit, setThaiNameEdit] = useState(props.thaiName);
@@ -349,23 +346,36 @@ const Blog = (props) => {
 	//NMR
 	const [NMR, setNMR] = useState(null);
 	const [NMRUrl, setNMRUrl] = useState(props.NMRUrl); //props.NMRUrl
-	const [newNMRUrl, setNewNMRUrl] = useState("");
+	const [newNMRUrl, setnewNMRUrl] = useState("");
 
-	const select_img_alert = (
-		<span>
-			<Alert severity="warning">
-				<Typography>กรุณาเลือกรูปภาพ!!!</Typography>
-			</Alert>
-		</span>
-	);
-	const upload_complete_alert = (
-		<span>
-			<Alert severity="success">
-				<Typography>อัพโหลดรูปภาพเรียบร้อย!!!</Typography>
-			</Alert>
-		</span>
-	);
+	const select_img_alert = () => {
+		return (
+			<span>
+				<Alert severity="warning">
+					<Typography>กรุณาเลือกรูปภาพ!!!</Typography>
+				</Alert>
+			</span>
+		);
+	};
+	const upload_complete_alert = () => {
+		return (
+			<span>
+				<Alert severity="success">
+					<Typography>อัพโหลดรูปภาพเรียบร้อย!!!</Typography>
+				</Alert>
+			</span>
+		);
+	};
 
+	useEffect(() => {
+		db.collection("users")
+			.doc(props.user_id)
+			.get()
+			.then((result) => {
+				setDisplayName(result.data().displayName);
+				setLevel(result.data().level);
+			});
+	}, []);
 	auth.onAuthStateChanged((user) => {
 		if (user) {
 			setLoggedIn(true);
@@ -388,7 +398,7 @@ const Blog = (props) => {
 			.collection("historys")
 			.add({
 				herb_id: props.main_id,
-				userDisplayName: user.displayName,
+				user_id: user.uid,
 				thaiName: thaiNameEdit,
 				engName: engNameEdit,
 				sciName: sciNameEdit,
@@ -402,11 +412,19 @@ const Blog = (props) => {
 				status: "ยังไม่ได้ยืนยัน",
 				voteCount: 0,
 			})
+			// .then(
+			// 	setActiveEdit(false),
+			// 	setTimeout(() => {
+			// 		setLoading(true), (window.location.href = "/herb/" + props.main_id);
+			// 	}, 3000)
+			// );
 			.then(
-				setActiveEdit(false),
 				setTimeout(() => {
-					setLoading(true), (window.location.href = "/herb/" + props.main_id);
-				}, 3000)
+					router.reload();
+					setTimeout(() => {
+						setActiveEdit(false);
+					}, 200);
+				}, 500)
 			);
 	};
 
@@ -458,7 +476,7 @@ const Blog = (props) => {
 						.getDownloadURL()
 						.then((imgUrl) => {
 							setNewImgUrl(imgUrl);
-							setUploadNoti(upload_complete_alert);
+							setUploadNoti("upload_complete_alert");
 							setTimeout(() => {
 								setUploadNoti(null);
 							}, 3000);
@@ -490,7 +508,7 @@ const Blog = (props) => {
 						.child(NMR.name)
 						.getDownloadURL()
 						.then((NMRUrl) => {
-							setNewNMRUrl(NMRUrl);
+							setnewNMRUrl(NMRUrl);
 							setUploadNoti(upload_complete_alert);
 							setTimeout(() => {
 								setUploadNoti(null);
@@ -610,6 +628,22 @@ const Blog = (props) => {
 		);
 	};
 
+	const Status = () => {
+		if (props.status === "ยืนยันแล้ว") {
+			return (
+				<span>
+					<Typography style={{ color: "#03C03C" }}>{props.status}</Typography>
+				</span>
+			);
+		} else {
+			return (
+				<span>
+					<Typography style={{ color: "#FF0800" }}>{props.status}</Typography>
+				</span>
+			);
+		}
+	};
+
 	return (
 		<div>
 			<Container component="main">
@@ -632,8 +666,21 @@ const Blog = (props) => {
 															<Typography className={classes.space}>
 																:&nbsp;
 															</Typography>
+
 															<Typography className={classes.userName}>
-																{props.userDisplayName}
+																{displayName}
+															</Typography>
+															<Typography className={classes.space}>
+																&nbsp;
+															</Typography>
+															<Typography className={classes.title}>
+																ระดับผู้ใช้
+															</Typography>
+															<Typography className={classes.space}>
+																:&nbsp;
+															</Typography>
+															<Typography className={classes.userName}>
+																{level}
 															</Typography>
 														</CardActionArea>
 													</Card>
@@ -647,9 +694,7 @@ const Blog = (props) => {
 															<Typography className={classes.space}>
 																:&nbsp;
 															</Typography>
-															<Typography className={classes.status}>
-																{props.status}
-															</Typography>
+															<Status />
 														</CardActionArea>
 													</Card>
 												</Grid>
@@ -877,24 +922,22 @@ const Blog = (props) => {
 										>
 											<Typography style={{ color: "black" }}>กลับ</Typography>
 										</Button>
-										<Button
-											key={props.main_id}
-											className={classes.historyButton}
-											variant="contained"
-											color="primary"
-											startIcon={<HistoryIcon />}
+										<Link
+											href="../herb/[id]/history/history_list"
+											as={"../herb/" + props.main_id + "/history/history_list"}
 										>
-											<Link
-												href="../herb/[id]/history/history_list"
-												as={
-													"../herb/" + props.main_id + "/history/history_list"
-												}
+											<Button
+												key={props.main_id}
+												className={classes.historyButton}
+												variant="contained"
+												color="primary"
+												startIcon={<HistoryIcon />}
 											>
 												<Typography itemProp="hello">
 													ประวัติการแก้ไข
 												</Typography>
-											</Link>
-										</Button>
+											</Button>
+										</Link>
 									</Grid>
 								</div>
 							</div>

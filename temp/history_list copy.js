@@ -1,9 +1,9 @@
 import React, { useContext, useState, useEffect } from "react";
-import db, { auth } from "../../../../database/firebase";
+import db, { auth } from "../database/firebase";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import firebase from "firebase";
-import { UserContext } from "../../../../providers/UserProvider";
+import { UserContext } from "../providers/UserProvider";
 
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
@@ -246,6 +246,7 @@ const history = (props) => {
 		const knownUserDecre = firebase.firestore.FieldValue.increment(-2);
 		const trustUserDecre = firebase.firestore.FieldValue.increment(-5);
 
+		// console.log(test);
 		if (mapData == null) {
 			if (user.level == "user") {
 				db.collection("herbs")
@@ -274,6 +275,7 @@ const history = (props) => {
 			db.collection("vote").add({
 				uid: user.uid,
 				herbid: hisid,
+				// voted: true,
 			});
 
 			db.collection("users")
@@ -304,9 +306,8 @@ const history = (props) => {
 
 			return;
 		}
-
 		mapData.map((dt) => {
-			if (mapData != null) {
+			if (mapData.voted == true) {
 				if (user.level == "user") {
 					db.collection("herbs")
 						.doc(props.main_id)
@@ -331,15 +332,38 @@ const history = (props) => {
 						.update({ voteCount: trustUserDecre });
 				}
 
-				//delete
-				db.collection("vote").doc(dt.id).delete();
+				db.collection("vote").doc(dt.id).update({ voted: false });
+			} else if (dt.voted == false) {
+				if (user.level == "user") {
+					db.collection("herbs")
+						.doc(props.main_id)
+						.collection("historys")
+						.doc(hisid)
+						.update({ voteCount: userIncre });
+				}
+
+				if (user.level == "known user") {
+					db.collection("herbs")
+						.doc(props.main_id)
+						.collection("historys")
+						.doc(hisid)
+						.update({ voteCount: knownUserIncre });
+				}
+
+				if (user.level == "trust user") {
+					db.collection("herbs")
+						.doc(props.main_id)
+						.collection("historys")
+						.doc(hisid)
+						.update({ voteCount: trustUserIncre });
+				}
+
+				db.collection("vote").doc(dt.id).update({ voted: true });
 
 				db.collection("users")
 					.doc(user.uid)
-					.update({ score: firebase.firestore.FieldValue.increment(-1) });
+					.update({ score: firebase.firestore.FieldValue.increment(+1) });
 			}
-
-			return;
 		});
 	};
 
@@ -521,7 +545,6 @@ const history = (props) => {
 														</Dialog>
 													</div>
 												)}
-											{/* <div>{history.user_id}</div> */}
 										</ListItem>
 									</div>
 									{space}

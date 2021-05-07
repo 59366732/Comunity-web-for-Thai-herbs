@@ -37,7 +37,7 @@ const useStyles = makeStyles((theme) => ({
 	root: {
 		...theme.typography.button,
 		flexGrow: 1,
-		padding: theme.spacing(2),
+		// padding: theme.spacing(2),
 		backgroundColor: "none",
 	},
 	paper: {
@@ -88,11 +88,24 @@ function Home(props) {
 		db.collection("herbs")
 			.orderBy("timestamp", "desc")
 			.onSnapshot((snap) => {
-				const herbs = snap.docs.map((doc) => ({
+				const herbsData = snap.docs.map((doc) => ({
 					id: doc.id,
 					...doc.data(),
 				}));
-				setHerbs(herbs);
+				setHerbs([]);
+				{
+					herbsData.map((herb) => {
+						if (herb.user_id) {
+							db.collection("users")
+								.doc(herb.user_id)
+								.get()
+								.then((result) => {
+									const newObject = Object.assign(herb, result.data());
+									setHerbs((herbs) => [...herbs, newObject]);
+								});
+						}
+					});
+				}
 			});
 	}, []);
 
@@ -118,7 +131,19 @@ function Home(props) {
 						)}
 					</div>
 				)}
-				<div style={{ paddingTop: "5px" }}>
+				{herbs.map((herb) => (
+					<div key={herb.id}>
+						<div>
+							<img src={herb.imgUrl} />
+						</div>
+						{/* <Link href="/herb/[id]" as={"/herb/" + herb.id}>
+							<a itemProp="hello">{herb.thaiName}</a>
+						</Link>
+						<div> เพิ่มโดย: &nbsp;{herb.displayName}</div> */}
+					</div>
+				))}
+				{/* <div style={{ paddingTop: "5px" }}>
+					
 					<Grid container spacing={2} direction="row">
 						{herbs.map((herb) => (
 							<Grid
@@ -178,7 +203,7 @@ function Home(props) {
 													margin: "0 0 0 2px",
 												}}
 											>
-												{limitContent(herb.userDisplayName, 11)}
+												{limitContent(herb.displayName, 6)}
 											</Typography>
 										)}
 										<Typography
@@ -205,7 +230,12 @@ function Home(props) {
 													margin: "0 0 0 2px",
 												}}
 											>
-												{new Date(herb.timestamp.seconds * 1000).toDateString()}
+												{limitContent(
+													new Date(
+														herb.timestamp.seconds * 1000
+													).toDateString(),
+													15
+												)}
 											</Typography>
 										)}
 										<Typography
@@ -239,7 +269,7 @@ function Home(props) {
 							</Grid>
 						))}
 					</Grid>
-				</div>
+				</div> */}
 			</div>
 		</div>
 	);

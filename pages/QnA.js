@@ -17,6 +17,7 @@ import ThumbsUpDownIcon from "@material-ui/icons/ThumbsUpDown";
 import QuestionAnswerIcon from "@material-ui/icons/QuestionAnswer";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import Tooltip from "@material-ui/core/Tooltip";
+import Search from "material-ui-search-bar";
 
 import { withStyles } from "@material-ui/core/styles";
 import CloseIcon from "@material-ui/icons/Close";
@@ -26,6 +27,12 @@ import MuiDialogActions from "@material-ui/core/DialogActions";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import Draggable, { DraggableCore } from "react-draggable";
 import Slide from "@material-ui/core/Slide";
+import ThumbUpIcon from "@material-ui/icons/ThumbUp";
+import ThumbUpOutlinedIcon from "@material-ui/icons/ThumbUpOutlined";
+import ExpandLessIcon from "@material-ui/icons/ExpandLess";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import ArrowDropUpIcon from "@material-ui/icons/ArrowDropUp";
+import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import {
 	Paper,
 	Dialog,
@@ -48,6 +55,7 @@ import {
 	Typography,
 	Box,
 	Grid,
+	Checkbox,
 } from "@material-ui/core/";
 
 const frameStyles = {
@@ -118,6 +126,10 @@ const useStyles = makeStyles((theme) => ({
 		marginLeft: theme.spacing(2),
 		flex: 1,
 	},
+	large: {
+		width: theme.spacing(7),
+		height: theme.spacing(7),
+	},
 }));
 
 const Transition = React.forwardRef(function Transition(props, ref) {
@@ -137,21 +149,33 @@ function PaperComponent(props) {
 const QandA = () => {
 	const [fullWidth, setFullWidth] = React.useState(true);
 	const classes = useStyles();
-	const [open, setOpen] = React.useState(false);
+	const [openAdd, setOpenAdd] = React.useState(false);
+	const [openLike, setOpenLike] = React.useState(false);
+	const [searchName, setSearchName] = useState("");
 
-	const handleClickOpenLogin = () => {
-		setOpen(true);
+	const handleClickOpenAdd = () => {
+		setOpenAdd(true);
 	};
 
-	const handleCloseLogin = () => {
-		setOpen(false);
+	const handleCloseAdd = () => {
+		setOpenAdd(false);
+	};
+
+	const handleClickOpenLike = () => {
+		setOpenLike(true);
+	};
+
+	const handleCloseLike = () => {
+		setOpenLike(false);
 	};
 
 	const { user, setUser } = useContext(UserContext);
 	const [response, setResponse] = useState([]);
 	const [posts, setPosts] = useState([]);
+	const [newLikePosts, setNewLikePosts] = useState([]);
 	const [loggedIn, setLoggedIn] = useState(false);
 	const [likedPost, setLikedPost] = useState([]);
+	const [test, setTest] = useState(likedPost ? true : false);
 
 	auth.onAuthStateChanged((user) => {
 		if (user) {
@@ -184,17 +208,42 @@ const QandA = () => {
 					});
 				}
 			});
-
-		db.collection("LikePost")
-			.where("uid", "==", user.uid)
-			.get()
-			.then(function (querySnapshot) {
-				const content = querySnapshot.docs.map((doc) => ({
-					id: doc.id,
-					...doc.data(),
-				}));
-				setLikedPost(content);
-			});
+		// db.collection("LikePost")
+		// 	.where("uid", "==", user.uid)
+		// 	.get()
+		// 	.then(function (querySnapshot) {
+		// 		const content = querySnapshot.docs.map((doc) => ({
+		// 			id: doc.id,
+		// 			...doc.data(),
+		// 		}));
+		// 		setLikedPost(content);
+		// 	});
+		// ======================================================================================
+		// db.collection("LikePost")
+		// 	.orderBy("timestamp", "desc")
+		// 	.onSnapshot((snap) => {
+		// 		const newLikePostData = snap.docs.map((doc) => ({
+		// 			id: doc.id,
+		// 			...doc.data(),
+		// 		}));
+		// 		setNewLikePosts([]);
+		// 		{
+		// 			newLikePostData.map((newLikePost) => {
+		// 				if (newLikePost.uid) {
+		// 					db.collection("users")
+		// 						.doc(newLikePost.uid)
+		// 						.get()
+		// 						.then((result) => {
+		// 							const newObject = Object.assign(newLikePost, result.data());
+		// 							setNewLikePosts((newLikePosts) => [
+		// 								...newLikePosts,
+		// 								newObject,
+		// 							]);
+		// 						});
+		// 				}
+		// 			});
+		// 		}
+		// 	});
 	}, []);
 
 	const thumbUp = async (postid) => {
@@ -248,6 +297,17 @@ const QandA = () => {
 				db.collection("LikePost").doc(dt.id).update({ liked: true });
 			}
 		});
+
+		db.collection("LikePost")
+			.where("uid", "==", user.uid)
+			.get()
+			.then(function (querySnapshot) {
+				const content = querySnapshot.docs.map((doc) => ({
+					id: doc.id,
+					...doc.data(),
+				}));
+				setLikedPost(content);
+			});
 	};
 
 	function limitContent(string, limit) {
@@ -258,12 +318,12 @@ const QandA = () => {
 		return string;
 	}
 
-	const LoginPopup = () => {
+	const LoginPopupForAdd = () => {
 		return (
 			<span>
 				<div>
 					<ListItem>
-						<Button onClick={handleClickOpenLogin}>
+						<Button onClick={handleClickOpenAdd}>
 							<Typography className={classes.titleText}>
 								ตั้งกระทู้ถาม
 							</Typography>
@@ -271,10 +331,10 @@ const QandA = () => {
 					</ListItem>
 				</div>
 				<Dialog
-					open={open}
+					open={openAdd}
 					TransitionComponent={Transition}
 					keepMounted
-					onClose={handleCloseLogin}
+					onClose={handleCloseAdd}
 					PaperComponent={PaperComponent}
 					aria-labelledby="draggable-dialog-title"
 				>
@@ -292,11 +352,11 @@ const QandA = () => {
 						</DialogContentText>
 					</MuiDialogContent>
 					<MuiDialogActions>
-						<Button autoFocus onClick={handleCloseLogin} color="default">
+						<Button autoFocus onClick={handleCloseAdd} color="default">
 							<Typography>ไม่ใช่</Typography>
 						</Button>
 						<Link href="/signin">
-							<Button onClick={handleCloseLogin} color="primary">
+							<Button onClick={handleCloseAdd} color="primary">
 								<Typography>ใช่</Typography>
 							</Button>
 						</Link>
@@ -306,42 +366,159 @@ const QandA = () => {
 		);
 	};
 
+	const LoginPopupForLike = () => {
+		return (
+			<span>
+				<Checkbox
+					onClick={handleClickOpenLike}
+					icon={
+						<>
+							<ThumbUpOutlinedIcon />
+						</>
+					}
+					checkedIcon={
+						<>
+							<ThumbUpOutlinedIcon />
+						</>
+					}
+					name="checkedH"
+				/>
+				<Dialog
+					open={openLike}
+					TransitionComponent={Transition}
+					keepMounted
+					onClose={handleCloseLike}
+					PaperComponent={PaperComponent}
+					aria-labelledby="draggable-dialog-title"
+				>
+					<MuiDialogTitle
+						style={{ cursor: "move" }}
+						id="draggable-dialog-title"
+					>
+						<Typography>เข้าสู่ระบบ?</Typography>
+					</MuiDialogTitle>
+					<MuiDialogContent>
+						<DialogContentText>
+							คุณต้องเข้าสู่ระบบก่อนเพื่อกดถูกใจคำถาม
+							คลิก(ใช่)เพื่อทำการเข้าสู้ระบบ
+							หรือคลิก(ไม่ใช่)เพื่อปิดหน้าต่างนี้.
+						</DialogContentText>
+					</MuiDialogContent>
+					<MuiDialogActions>
+						<Button autoFocus onClick={handleCloseLike} color="default">
+							<Typography>ไม่ใช่</Typography>
+						</Button>
+						<Link href="/signin">
+							<Button onClick={handleCloseLike} color="primary">
+								<Typography>ใช่</Typography>
+							</Button>
+						</Link>
+					</MuiDialogActions>
+				</Dialog>
+			</span>
+		);
+	};
+
+	const asdf = (id) => {
+		var bb = document.getElementById(id);
+		console.log(bb);
+		return bb;
+	};
+
 	const QuestionComponent = () => {
 		return (
 			<span>
 				{posts.map((post) => (
 					<div key={post.id}>
 						<ListItem alignItems="flex-start">
-							<ListItemIcon style={{ padding: "0 10px 0 0" }}>
+							<ListItemIcon
+								style={{
+									display: "flex",
+									padding: "0 0 0 0",
+									justifyContent: "center",
+								}}
+							>
 								<div style={{ display: "block" }}>
-									<Button onClick={() => thumbUp(post.id)}>
-										<ThumbsUpDownIcon />
-									</Button>
+									{loggedIn ? (
+										<Checkbox
+											onClick={() => thumbUp(post.id)}
+											icon={
+												<>
+													<ThumbUpOutlinedIcon
+														onClick={() => thumbUp(post.id)}
+													/>
+												</>
+											}
+											checkedIcon={
+												<>
+													<ThumbUpIcon
+														color="primary"
+														className={classes.button}
+														onClick={() => thumbUp(post.id)}
+													/>
+												</>
+											}
+											name="checkedH"
+										/>
+									) : (
+										<LoginPopupForLike />
+									)}
 									<Typography
 										style={{
 											display: "flex",
 											flexDirection: "column",
 											textAlign: "center",
+											padding: "0 0 0 0",
 										}}
 									>
 										{post.likeCount}
 									</Typography>
 								</div>
 							</ListItemIcon>
-							<ListItemIcon style={{ padding: "0 0 0 10px" }}>
+							{/* <ListItemIcon
+								style={{
+									display: "flex",
+									padding: "0 0 0 0",
+									justifyContent: "center",
+								}}
+							>
+								<div style={{ display: "flex" }}>
+									<div style={{ display: "flex", flexDirection: "column" }}>
+										<Checkbox
+											icon={<ExpandLessIcon className={classes.large} />}
+											checkedIcon={<ExpandLessIcon className={classes.large} />}
+										/>
+										<Typography style={{ textAlign: "center" }}>
+											{post.likeCount}
+										</Typography>
+										<Checkbox
+											icon={<ExpandMoreIcon className={classes.large} />}
+											checkedIcon={<ExpandMoreIcon className={classes.large} />}
+										/>
+									</div>
+								</div>
+							</ListItemIcon> */}
+							{/* <ListItemIcon
+								style={{
+									display: "flex",
+									padding: "0 0 0 10px",
+									justifyContent: "center",
+								}}
+							>
 								<div
 									style={{
 										display: "flex",
 										flexDirection: "column",
 										textAlign: "center",
-										padding: "10px 0 0 0",
+										padding: "8px 0 0 0",
 									}}
 								>
 									<QuestionAnswerIcon />
-									<Typography>1</Typography>
+									<Typography style={{ padding: "10px 0 0 0" }}>1</Typography>
 								</div>
-							</ListItemIcon>
+							</ListItemIcon> */}
 							<ListItemText
+								style={{ margin: "0 0 0 10px" }}
 								primary={
 									<React.Fragment>
 										<Link href="./QandA/[QnA_id]" as={"/QandA/" + post.id}>
@@ -386,7 +563,7 @@ const QandA = () => {
 												textTransform: "capitalize",
 											}}
 										>
-											{post.userDisplayName}
+											{post.displayName}
 										</Typography>
 										&ensp;
 										<Typography
@@ -423,6 +600,28 @@ const QandA = () => {
 												post.timestamp.seconds * 1000
 											).toLocaleTimeString()}
 										</Typography>
+										{/* <div>{post.user_id}</div>
+										<div>{user.uid}</div>
+										<div>
+											{post.user_id === user.uid ? (
+												<Button>Equal</Button>
+											) : (
+												<Button>Not Equal</Button>
+											)}
+										</div> */}
+										{/* {newLikePosts.map((newLikePost) => (
+											<div key={newLikePost.id}>
+												<div>{newLikePost.uid}</div>
+												<div>{user.uid}</div>
+												<div>
+													{newLikePost.uid === user.uid ? (
+														<Button>Equal</Button>
+													) : (
+														<Button>Not Equal</Button>
+													)}
+												</div>
+											</div>
+										))} */}
 									</React.Fragment>
 								}
 							/>
@@ -468,9 +667,9 @@ const QandA = () => {
 										</Button>
 									</ListItem>
 								</div> */}
-								{loggedIn ? <AddQuestion /> : <LoginPopup />}
+								{loggedIn ? <AddQuestion /> : <LoginPopupForAdd />}
 								<div className={classes.search}>
-									<TextField
+									<Search
 										style={{ display: "flex-end" }}
 										fullWidth
 										variant="outlined"

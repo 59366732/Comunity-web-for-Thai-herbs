@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import db, { auth, storage } from "../../../../../database/firebase";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -211,7 +211,7 @@ export const getServerSideProps = async ({ query }) => {
 		.doc(query.detail_id)
 		.get()
 		.then((result) => {
-			content["userDisplayName"] = result.data().userDisplayName;
+			content["user_id"] = result.data().user_id;
 			content["thaiName"] = result.data().thaiName;
 			content["engName"] = result.data().engName;
 			content["sciName"] = result.data().sciName;
@@ -236,7 +236,7 @@ export const getServerSideProps = async ({ query }) => {
 		props: {
 			main_id: content.main_id,
 			detail_id: content.detail_id,
-			userDisplayName: content.userDisplayName,
+			user_id: content.user_id,
 			thaiName: content.thaiName,
 			engName: content.engName,
 			sciName: content.sciName,
@@ -271,6 +271,8 @@ const detail = (props) => {
 	const router = useRouter();
 
 	const { user, setUser } = useContext(UserContext);
+	const [displayName, setDisplayName] = useState("");
+	const [level, setLevel] = useState("");
 
 	const [activeEdit, setActiveEdit] = useState(false);
 	const [loggedIn, setLoggedIn] = useState(false);
@@ -315,6 +317,16 @@ const detail = (props) => {
 		</span>
 	);
 
+	useEffect(() => {
+		db.collection("users")
+			.doc(props.user_id)
+			.get()
+			.then((result) => {
+				setDisplayName(result.data().displayName);
+				setLevel(result.data().level);
+			});
+	}, []);
+
 	auth.onAuthStateChanged((user) => {
 		if (user) {
 			setLoggedIn(true);
@@ -337,7 +349,7 @@ const detail = (props) => {
 			.collection("historys")
 			.add({
 				herb_id: props.main_id,
-				userDisplayName: user.displayName,
+				user_id: user.uid,
 				thaiName: thaiNameEdit,
 				engName: engNameEdit,
 				sciName: sciNameEdit,
@@ -514,6 +526,22 @@ const detail = (props) => {
 		);
 	};
 
+	const Status = () => {
+		if (props.status === "ยืนยันแล้ว") {
+			return (
+				<span>
+					<Typography style={{ color: "#03C03C" }}>{props.status}</Typography>
+				</span>
+			);
+		} else {
+			return (
+				<span>
+					<Typography style={{ color: "#FF0800" }}>{props.status}</Typography>
+				</span>
+			);
+		}
+	};
+
 	return (
 		<SnackbarProvider maxSnack={3}>
 			<Container component="main">
@@ -583,7 +611,19 @@ const detail = (props) => {
 															display: "inline",
 														}}
 													>
-														{props.userDisplayName}
+														{displayName}
+													</Typography>
+													<Typography className={classes.space}>
+														&nbsp;
+													</Typography>
+													<Typography className={classes.title}>
+														ระดับผู้ใช้
+													</Typography>
+													<Typography className={classes.space}>
+														:&nbsp;
+													</Typography>
+													<Typography className={classes.userName}>
+														{level}
 													</Typography>
 												</Card>
 											</Grid>
@@ -596,9 +636,7 @@ const detail = (props) => {
 														<Typography className={classes.space}>
 															:&nbsp;
 														</Typography>
-														<Typography className={classes.status}>
-															{props.status}
-														</Typography>
+														<Status />
 													</CardActionArea>
 												</Card>
 											</Grid>

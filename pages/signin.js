@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { useState } from "react";
-import { auth } from "../database/firebase";
+import db, { auth } from "../database/firebase";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
@@ -19,6 +19,17 @@ import Avatar from "@material-ui/core/Avatar";
 import LockOpenIcon from "@material-ui/icons/LockOpen";
 import { makeStyles } from "@material-ui/core/styles";
 import { Alert, AlertTitle } from "@material-ui/lab/";
+import Visibility from '@material-ui/icons/Visibility';
+import VisibilityOff from '@material-ui/icons/VisibilityOff';
+import clsx from 'clsx';
+import IconButton from '@material-ui/core/IconButton';
+import Input from '@material-ui/core/Input';
+import FilledInput from '@material-ui/core/FilledInput';
+import OutlinedInput from '@material-ui/core/OutlinedInput';
+import InputLabel from '@material-ui/core/InputLabel';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import FormControl from '@material-ui/core/FormControl';
 
 // Firebase.
 import firebase from "firebase/app";
@@ -55,7 +66,38 @@ const SignIn = () => {
 
 	auth.onAuthStateChanged((user) => {
 		if (user) {
-			window.location.href = "/";
+			db.collection("users")
+				.doc(user.uid)
+				.get()
+				.then((result) => {
+					if (result.data().score < 10) {
+						db.collection("users").doc(user.uid).update({ level: "visitor" });
+					} else if (
+						result.data().score >= 10 &&
+						result.data().score < 60 &&
+						result.data().addHerb == true
+					) {
+						db.collection("users").doc(user.uid).update({ level: "user" });
+					} else if (
+						result.data().score >= 60 &&
+						result.data().score < 100 &&
+						result.data().addHerb == true
+					) {
+						db.collection("users")
+							.doc(user.uid)
+							.update({ level: "known user" });
+					} else if (
+						result.data().score >= 300 &&
+						result.data().addHerb == true
+					) {
+						db.collection("users")
+							.doc(user.uid)
+							.update({ level: "trust user" });
+					}
+				});
+			setTimeout(() => {
+				window.location.href = "/";
+			}, 800);
 		} else {
 		}
 	});
@@ -185,7 +227,16 @@ const SignIn = () => {
 					</div>
 					<br />
 					<br />
-					<Grid item xs={12} style={{display: "flex", flexDirection: "row", justifyContent: "center", alignItem: "center"}}>
+					<Grid
+						item
+						xs={12}
+						style={{
+							display: "flex",
+							flexDirection: "row",
+							justifyContent: "center",
+							alignItem: "center",
+						}}
+					>
 						<Typography style={{ textAlign: "center", fontWeight: "bold" }}>
 							หรือ
 						</Typography>

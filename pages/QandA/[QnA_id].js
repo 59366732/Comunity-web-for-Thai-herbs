@@ -268,11 +268,16 @@ const QnApost = (props) => {
 	const classes = useStyles();
 
 	const { user, setUser } = useContext(UserContext);
+	//=====================================================
 	const [posts, setPosts] = useState([]);
+	//=====================================================
 	const [comments, setComments] = useState([]);
 	const router = useRouter();
 	const [loggedIn, setLoggedIn] = useState(false);
 	const [displayName, setDisplayName] = useState("");
+	const [level, setLevel] = useState("");
+	const [likedPost, setLikedPost] = useState([]);
+	const [test, setTest] = useState(likedPost ? true : false);
 
 	//input
 	const [inputComment, setInputComment] = useState("");
@@ -281,14 +286,14 @@ const QnApost = (props) => {
 		db.collection("QnA")
 			.doc(props.Question_id)
 			.collection("comments")
-			.orderBy("timestamp", "desc")
+			.orderBy("timestamp")
 			.onSnapshot((snap) => {
 				const commentData = snap.docs.map((doc) => ({
 					id: doc.id,
 					...doc.data(),
 				}));
 
-				setComments(comment);
+				setComments([]);
 				{
 					commentData.map((comment) => {
 						if (comment.user_id) {
@@ -302,12 +307,23 @@ const QnApost = (props) => {
 						}
 					});
 				}
-				///==============TEST BEGIN=========================================
-				const post = snap.docs.map((doc) => ({
+			});
+		db.collection("users")
+			.doc(props.user_id)
+			.get()
+			.then((result) => {
+				setDisplayName(result.data().displayName);
+				setLevel(result.data().level);
+			});
+		///==============TEST BEGIN=========================================
+		db.collection("QnA")
+			.orderBy("timestamp", "desc")
+			.onSnapshot((snap) => {
+				const postData = snap.docs.map((doc) => ({
 					id: doc.id,
 					...doc.data(),
 				}));
-				setPosts(post);
+				setPosts([]);
 				{
 					postData.map((post) => {
 						if (post.user_id) {
@@ -321,15 +337,8 @@ const QnApost = (props) => {
 						}
 					});
 				}
-				///==============TEST END===========================================
 			});
-		db.collection("users")
-			.doc(props.user_id)
-			.get()
-			.then((result) => {
-				setDisplayName(result.data().displayName);
-			});
-		///==============TEST BEGIN=========================================
+
 		db.collection("LikePost")
 			.where("uid", "==", user.uid)
 			.get()
@@ -518,13 +527,13 @@ const QnApost = (props) => {
 			return Comment_voteORnot(mapData, commentid);
 		}
 	};
-	const Comment_voteORnot = (test, commentid) => {
+	const Comment_voteORnot = (mapData, commentid) => {
 		//increment
 		const Increment = firebase.firestore.FieldValue.increment(+1);
 		//decrement
 		const Decrement = firebase.firestore.FieldValue.increment(-1);
 
-		if (test == null) {
+		if (mapData == null) {
 			db.collection("QnA")
 				.doc(props.Question_id)
 				.collection("comments")
@@ -539,24 +548,33 @@ const QnApost = (props) => {
 
 			return;
 		}
-		test.map((dt) => {
-			if (dt.liked == true) {
+		mapData.map((dt) => {
+			if (mapData != null) {
 				db.collection("QnA")
 					.doc(props.Question_id)
 					.collection("comments")
 					.doc(commentid)
 					.update({ likeCount: Decrement });
 
-				db.collection("LikeComment").doc(dt.id).update({ liked: false });
-			} else if (dt.liked == false) {
-				db.collection("QnA")
-					.doc(props.Question_id)
-					.collection("comments")
-					.doc(commentid)
-					.update({ likeCount: Increment });
-
-				db.collection("LikeComment").doc(dt.id).update({ liked: true });
+				db.collection("LikeComment").doc(dt.id).delete();
 			}
+			// if (dt.liked == true) {
+			// 	db.collection("QnA")
+			// 		.doc(props.Question_id)
+			// 		.collection("comments")
+			// 		.doc(commentid)
+			// 		.update({ likeCount: Decrement });
+
+			// 	db.collection("LikeComment").doc(dt.id).update({ liked: false });
+			// } else if (dt.liked == false) {
+			// 	db.collection("QnA")
+			// 		.doc(props.Question_id)
+			// 		.collection("comments")
+			// 		.doc(commentid)
+			// 		.update({ likeCount: Increment });
+
+			// 	db.collection("LikeComment").doc(dt.id).update({ liked: true });
+			// }
 		});
 	};
 
@@ -573,8 +591,6 @@ const QnApost = (props) => {
 	const handleCloseConfirm = () => {
 		setOpen(false);
 	};
-
-	const [loggedIn, setLoggedIn] = useState(false);
 	auth.onAuthStateChanged((user) => {
 		if (user) {
 			setLoggedIn(true);
@@ -599,6 +615,10 @@ const QnApost = (props) => {
 			timestamp: firebase.firestore.FieldValue.serverTimestamp(),
 			likeCount: 0,
 		});
+
+		db.collection("users")
+			.doc(user.uid)
+			.update({ score: firebase.firestore.FieldValue.increment(+0.1) });
 
 		setInputComment("");
 		setShowReplyField(!showReplyField);
@@ -658,6 +678,18 @@ const QnApost = (props) => {
 												</Typography>
 												<Typography className={classes.userName}>
 													{displayName}
+												</Typography>
+												<Typography className={classes.space}>
+													&nbsp;
+												</Typography>
+												<Typography className={classes.title}>
+													ระดับผู้ใช้
+												</Typography>
+												<Typography className={classes.space}>
+													:&nbsp;
+												</Typography>
+												<Typography className={classes.userName}>
+													{level}
 												</Typography>
 											</CardActionArea>
 										</Card>
@@ -822,7 +854,7 @@ const QnApost = (props) => {
 									>
 										<CardContent>
 											<Typography className={classes.title}>
-												ความคิดเห็นที่ x โดย
+												ความคิดเห็นโดย
 											</Typography>
 											<Typography className={classes.space}>:&nbsp;</Typography>
 											<Typography className={classes.userName}>

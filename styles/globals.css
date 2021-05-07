@@ -32,8 +32,43 @@ a {
 	display: flex;
 	position: fixed;
 }
-/* img {
-	height: 100%;
-	width: 100%;
-	object-fit: contain;
-} */
+
+.blackButton {
+	background-color: black;
+	color: white;
+}
+
+.whiteButton {
+	background-color: white;
+	color: black;
+}
+
+.buttonTrue {
+	display: inline-block;
+	padding: 15px 25px;
+	font-size: 24px;
+	cursor: pointer;
+	text-align: center;
+	text-decoration: none;
+	outline: none;
+	color: #000;
+	background-color: yellow;
+	border: none;
+	border-radius: 15px;
+	box-shadow: 0 9px #999;
+}
+
+.buttonFalse {
+	display: inline-block;
+	padding: 15px 25px;
+	font-size: 24px;
+	cursor: pointer;
+	text-align: center;
+	text-decoration: none;
+	outline: none;
+	color: #fff;
+	background-color: red;
+	border: none;
+	border-radius: 15px;
+	box-shadow: 0 9px #999;
+}

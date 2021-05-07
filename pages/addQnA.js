@@ -258,12 +258,17 @@ const AddQuestion = () => {
 
 	const { user, setUser } = useContext(UserContext);
 	const [loggedIn, setLoggedIn] = useState(false);
+	const [addError, setAddError] = useState(null);
+	const [open, setOpen] = React.useState(false);
+	const [error, setError] = useState(null);
 
 	const router = useRouter();
 
 	//input
 	const [title, setTitle] = useState("");
 	const [detail, setDetail] = useState("");
+	const [questionTitle, setQuestionTitle] = useState("");
+	const [questionDetail, setQuestionDetail] = useState("");
 
 	auth.onAuthStateChanged((user) => {
 		if (user) {
@@ -276,13 +281,27 @@ const AddQuestion = () => {
 	const handleSubmit = (e) => {
 		e.preventDefault();
 
-		db.collection("QnA").add({
-			user_id: user.uid,
-			title: title,
-			detail: detail,
-			timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-			likeCount: 0,
-		});
+		if (title && detail) {
+			db.collection("herbs");
+			db.collection("QnA").add({
+				user_id: user.uid,
+				title: title,
+				detail: detail,
+				timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+				likeCount: 0,
+			});
+		} else {
+			setTimeout(() => {
+				setAddError(null);
+				setOpen(false);
+				// window.location.href = "/QnA";
+			}, 0);
+			return null;
+		}
+
+		db.collection("users")
+			.doc(user.uid)
+			.update({ score: firebase.firestore.FieldValue.increment(+0.1) });
 
 		setTitle("");
 		setDetail("");
@@ -293,11 +312,7 @@ const AddQuestion = () => {
 	const [fullScreen, setFullScreen] = React.useState("true");
 	const [fullWidth, setFullWidth] = React.useState("true");
 	const [maxWidth, setMaxWidth] = React.useState("md");
-	const [open, setOpen] = React.useState(false);
-	const [error, setError] = useState(null);
-
-	const [questionTitle, setQuestionTitle] = useState("");
-	const [questionDetail, setQuestionDetail] = useState("");
+	
 
 	const handleClickOpen = () => {
 		setOpen(true);
@@ -340,8 +355,8 @@ const AddQuestion = () => {
 					</DialogTitle>
 					<DialogContent>
 						<DialogContentText>
-							คุณต้องการยกเลิกการตั้งกระทู้ถามใช่หรือไม่?
-							คลิก(ใช่)เพื่อยกเลิกการตั้งกระทู้ถาม
+							คุณต้องการ<a style={{ color: "red" }}>ยกเลิกการตั้งกระทู้ถาม</a>
+							ใช่หรือไม่? คลิก(ใช่)เพื่อยกเลิกการตั้งกระทู้ถาม
 							หรือคลิก(ไม่ใช่)เพื่อดำเนินการตั้งกระทู้ถามต่อ.
 						</DialogContentText>
 					</DialogContent>

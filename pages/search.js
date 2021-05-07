@@ -1,9 +1,15 @@
-import React, { Component, useState } from "react";
+import React, { Component, useState, useEffect } from "react";
 import AsyncSelect from "react-select/async";
 import db from "../database/firebase";
 import SearchIcon from "@material-ui/icons/Search";
 import InputBase from "@material-ui/core/InputBase";
 import { fade, makeStyles } from "@material-ui/core/styles";
+import SearchComponent from "../component/searchBar";
+import Link from "next/link";
+
+import SearchBar from "material-ui-search-bar";
+import LinearProgress from "@material-ui/core/LinearProgress";
+
 import {
 	TextField,
 	CssBaseline,
@@ -13,6 +19,7 @@ import {
 	CardActionArea,
 	CardActions,
 	CardMedia,
+	CardContent,
 	Button,
 	Typography,
 	Paper,
@@ -25,10 +32,24 @@ import {
 	ListItem,
 } from "@material-ui/core/";
 import Alert from "@material-ui/lab/Alert";
-import SearchOption from "../component/searchoption";
 const useStyles = makeStyles((theme) => ({
 	root: {
-		margin: theme.spacing(1),
+		...theme.typography.button,
+		flexGrow: 1,
+		// padding: theme.spacing(2),
+		backgroundColor: "none",
+	},
+	media: {
+		height: 160,
+	},
+	content: {
+		textAlign: "center",
+	},
+	description: {
+		alignItems: "center",
+	},
+	title: {
+		fontWeight: "bold",
 	},
 	button: {
 		padding: theme.spacing(1),
@@ -44,193 +65,197 @@ const useStyles = makeStyles((theme) => ({
 	},
 }));
 
-function Search() {
+function limitContent(string, limit) {
+	var dots = "...";
+	if (string != null && string.length > limit) {
+		string = string.substring(0, limit) + dots;
+	} else {
+		string = string;
+	}
+	return string;
+}
+
+function Search(props) {
 	const classes = useStyles();
-	const [selectedTag, setSelectedTag] = useState([]);
-	const [fullWidth, setFullWidth] = React.useState("true");
 	const [herbs, setHerbs] = useState([]);
-	const [searchName, setSearchName] = useState([]);
-	const [error, setError] = useState(null);
+	const { loading = false } = props;
 
-	const please_type_before = (
-		<span>
-			<Alert severity="warning">
-				<Typography>กรุณาพิมพ์ข้อความเพื่อทำการค้นหา!!!</Typography>
-			</Alert>
-		</span>
-	);
+	useEffect(() => {
+		db.collection("herbs")
+			.orderBy("timestamp", "desc")
+			.onSnapshot((snap) => {
+				const herbsData = snap.docs.map((doc) => ({
+					id: doc.id,
+					...doc.data(),
+				}));
+				setHerbs([]);
+				{
+					herbsData.map((herb) => {
+						if (herb.user_id) {
+							db.collection("users")
+								.doc(herb.user_id)
+								.get()
+								.then((result) => {
+									const newObject = Object.assign(herb, result.data());
+									setHerbs((herbs) => [...herbs, newObject]);
+								});
+						}
+					});
+				}
+			});
+	}, []);
 
-	const handleSubmit = (e) => {
-		e.preventDefault();
-		if (searchName) {
-			db.collection("herbs")
-				.where("thaiName", "==", searchName)
-				.orderBy("timestamp", "desc")
-				.onSnapshot((snapshot) =>
-					setHerbs(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })))
-				);
-		} else {
-			setError(please_type_before);
-			setTimeout(() => {
-				setError(null);
-			}, 2000);
+	const filterPosts = (herbs, query) => {
+		if (!query) {
+			return [];
 		}
 
-		setSearchName("");
+		return herbs.filter((post) => {
+			const herbName = post.thaiName.toLowerCase();
+			return herbName.includes(query);
+		});
 	};
 
-	// const loadOptions = async (inputValue) => {
-	//   inputValue = inputValue.toLowerCase().replace(/\W/g, "");
-	//   return new Promise((resolve) => {
-	//     db.collection("herbs")
-	//       .orderBy("timestamp")
-	//       .startAt(inputValue)
-	//       .endAt(inputValue + "\uf8ff")
-	//       .get()
-	//       .then((docs) => {
-	//         if (!docs.empty) {
-	//           let recommendedTags = [];
-	//           docs.forEach(function (doc) {
-	//             const tag = {
-	//               value: doc.id,
-	//               label: doc.data().thaiName,
-	//             };
-	//             recommendedTags.push(tag);
-	//           });
-	//           return resolve(recommendedTags);
-	//         } else {
-	//           return resolve([]);
-	//         }
-	//       });
-	//   });
-	// };
-
-	// handleOnChange = (tags) => {
-	//   this.setState({
-	//     selectedTag: [tags],
-	//   });
-	// };
-
-	// return (
-	// 	<div>
-	// 		<AsyncSelect
-	// 			value={selectedTag}
-	// 			loadOptions={loadOptions}
-	// 			onChange={(e) => setSelectedTag(e.target.value)}
-	// 		/>
-	// 		<p>Selected Tag:</p>
-	// 		{this.state.selectedTag.map((e) => {
-	// 			return <li key={e.value}>{e.label}</li>;
-	// 		})}
-	// 	</div>
-	// );
+	const [searchQuery, setSearchQuery] = useState("");
+	const filteredPosts = filterPosts(herbs, searchQuery);
 
 	return (
-		<div style={{ textAlign: "center" }} className={classes.root}>
+		<div
+			style={{ textAlign: "center", position: "relative" }}
+			className={classes.root}
+		>
 			<CssBaseline />
-			<Container maxWidth="sm">
-				<form>
-					<div style={{ display: "inline" }}>
-						<List>
-							<ListItem>
-								<TextField
-									fullWidth
-									variant="outlined"
-									value={searchName}
-									onChange={(e) => setSearchName(e.target.value)}
-									placeholder="ค้นหา"
-								/>
-							</ListItem>
-							<ListItem>{error !== null && <div>{error}</div>}</ListItem>
-							<ListItem>
-								<div className={classes.formControl}>
-									<SearchOption />
-								</div>
-							</ListItem>
-							<ListItem>
-								<Button
-									className={classes.button}
-									fullWidth
-									onClick={handleSubmit}
-									color="primary"
-									type="submit"
-								>
-									<SearchIcon />
-									ค้นหา
-								</Button>
-							</ListItem>
-						</List>
-					</div>
-				</form>
-				<div>
-					{herbs ? (
-						herbs.map((herb) => (
-							<li key={herb.id}>
+			<div style={{ paddingBottom: "20px" }}>
+				<SearchComponent
+					searchQuery={searchQuery}
+					setSearchQuery={setSearchQuery}
+				/>
+			</div>
+			<div style={{ paddingTop: "20px" }}>
+				<Grid container spacing={2} direction="row">
+					{filteredPosts.map((herb) => (
+						<Grid
+							key={herb.id}
+							item
+							xs={12}
+							sm={6}
+							md={3}
+							key={herbs.indexOf(herb)}
+						>
+							<Card>
 								<Link href="/herb/[id]" as={"/herb/" + herb.id}>
-									<a itemProp="hello">{herb.herbname}</a>
-								</Link>
-							</li>
-						))
-					) : (
-						<h1>No matching documents</h1>
-					)}
-				</div>
-				<div style={{ paddingTop: "5px" }}>
-					<Grid container spacing={2} direction="row">
-						{herbs.map((herb) => (
-							<Grid item xs={12} sm={6} md={3} key={herbs.indexOf(herb)}>
-								<Card>
 									<CardActionArea>
-										<CardMedia
-											className={classes.media}
-											image={herb.imgUrl}
-											title="Herb Image"
-										/>
+										{loading ? (
+											<Skeleton variant="rect" height={160} />
+										) : (
+											<CardMedia
+												component="img"
+												alt=""
+												className={classes.media}
+												image={
+													herb.imgUrl ||
+													"https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse2.mm.bing.net%2Fth%3Fid%3DOIP.ouOFcEHOYh7Dj3JCmDUfhwAAAA%26pid%3DApi&f=1"
+												}
+												title="Herb Image"
+											/>
+										)}
 										<CardContent className={classes.title}>
-											<Link href="/herb/[id]" as={"/herb/" + herb.id}>
-												<Typography
-													gutterBottom
-													variant="h5"
-													component="h2"
-													itemProp="hello"
-												>
-													{herb.thaiName}
-												</Typography>
-											</Link>
+											<Typography
+												gutterBottom
+												variant="h5"
+												component="h2"
+												itemProp="hello"
+											>
+												{herb.thaiName}
+											</Typography>
 										</CardContent>
 									</CardActionArea>
-									<CardActions>
+								</Link>
+								<CardActions>
+									<Typography
+										variant="caption"
+										style={{ fontWeight: "bold", float: "left" }}
+									>
+										{loading ? <Skeleton variant="text" /> : "โดย:"}
+									</Typography>
+									{loading ? (
+										<Typography variant="caption">
+											<Skeleton variant="text" />
+										</Typography>
+									) : (
 										<Typography
 											variant="caption"
-											style={{ fontWeight: "bold", float: "left" }}
+											style={{
+												color: "#007FFF",
+												textTransform: "capitalize",
+												margin: "0 0 0 2px",
+											}}
 										>
-											โดย:
+											{limitContent(herb.displayName, 6)}
 										</Typography>
+									)}
+									<Typography
+										variant="caption"
+										style={{
+											fontWeight: "bold",
+											display: "inline",
+											margin: "0 0 0 3px",
+										}}
+									>
+										{loading ? <Skeleton variant="text" /> : "เมื่อ:"}
+									</Typography>
+									{loading ? (
+										<Typography variant="caption">
+											<Skeleton variant="text" />
+										</Typography>
+									) : (
 										<Typography
 											variant="caption"
-											style={{ color: "#007FFF", textTransform: "capitalize" }}
+											style={{
+												display: "inline",
+												color: "#007FFF",
+												textTransform: "capitalize",
+												margin: "0 0 0 2px",
+											}}
 										>
-											{herb.userDisplayName}
+											{limitContent(
+												new Date(herb.timestamp.seconds * 1000).toDateString(),
+												15
+											)}
 										</Typography>
+									)}
+									<Typography
+										style={{
+											display: "inline",
+											fontWeight: "bold",
+											margin: "0 0 0 0",
+										}}
+									>
+										{loading ? <skeleton /> : <>,&ensp;</>}
+									</Typography>
+									{loading ? (
+										<skeleton variant="text" />
+									) : (
 										<Typography
 											variant="caption"
-											style={{ fontWeight: "bold", display: "inline" }}
+											style={{
+												color: "#007FFF",
+												display: "inline",
+												textTransform: "lowercase",
+												margin: "0 0 0 0px",
+											}}
 										>
-											เมื่อ:
+											{new Date(
+												herb.timestamp.seconds * 1000
+											).toLocaleTimeString()}
 										</Typography>
-										<Typography
-											variant="caption"
-											style={{ color: "#007FFF", textTransform: "capitalize" }}
-										>
-											{new Date(herb.timestamp.seconds * 1000).toDateString()}
-										</Typography>
-									</CardActions>
-								</Card>
-							</Grid>
-						))}
-					</Grid>
-				</div>
-			</Container>
+									)}
+								</CardActions>
+							</Card>
+						</Grid>
+					))}
+				</Grid>
+			</div>
 		</div>
 	);
 }

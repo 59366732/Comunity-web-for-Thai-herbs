@@ -27,14 +27,15 @@ function MyApp({ Component, pageProps }) {
 	// }, []);
 	return (
 		<React.Fragment>
-			<Header />
+			{/* <Header /> */}
 			<CssBaseline />
 			<MuiThemeProvider theme={theme}>
 				<UserProvider>
 					<ActivityProvider>
 						<div className="App">
 							<Navbar />
-							<Container maxwidth="xl" minwidth="xl">
+							{/* maxwidth="xl" minwidth="xl" */}
+							<Container >
 								<div className="container">
 									<Component {...pageProps} />
 								</div>

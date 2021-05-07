@@ -61,6 +61,11 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 });
 
 const useStyles = makeStyles((theme) => ({
+	removeHover: {
+		"&:hover": {
+			backgroundColor: "transparent",
+		},
+	},
 	root: {
 		flexGrow: 1,
 		minWidth: "500px",
@@ -161,7 +166,6 @@ export default function Navbar(props) {
 	const [loggedIn, setLoggedIn] = useState(false);
 	const { loading = false } = props;
 
-
 	const classes = useStyles();
 	const [open, setOpen] = React.useState(false);
 	const [openLogout, setOpenLogout] = React.useState(false);
@@ -210,7 +214,7 @@ export default function Navbar(props) {
 					</DialogTitle>
 					<DialogContent>
 						<DialogContentText>
-							คุณต้องการออกจากระบบหรือไม่?
+							คุณต้องการ<a style={{ color: "red" }}>ออกจากระบบ</a>หรือไม่?
 							คลิก(ใช่)เพื่อออกจากระบบหรือคลิก(ไม่ใช่)เพื่อคงอยู่ในระบบ.
 						</DialogContentText>
 					</DialogContent>
@@ -236,7 +240,7 @@ export default function Navbar(props) {
 
 	return (
 		<Box width={1}>
-			<HideOnScroll>
+			{/* <HideOnScroll> */}
 				<AppBar position="fixed">
 					<Toolbar component="nav">
 						<Container
@@ -249,15 +253,16 @@ export default function Navbar(props) {
 								aria-label="home"
 								href="/"
 								style={{
+									margin: "0 0 0 0",
 									color: `white`,
 									fontSize: "200%",
-									margin: "0 0 0 50px",
 								}}
+								className={classes.removeHover}
 							>
 								เว็บชุมชนสมุนไพรไทย
 							</IconButton>
 
-							<Hidden smDown>
+							{/* <Hidden smDown> */}
 								<List
 									className="navbar-container"
 									component="nav"
@@ -265,29 +270,44 @@ export default function Navbar(props) {
 									className={classes.navListDisplayFlex}
 								>
 									<Link href="/">
-										<IconButton style={{ color: `white` }}>
+										<IconButton
+											style={{ color: `white` }}
+											className={classes.removeHover}
+										>
 											<Typography>หน้าแรก</Typography>
 										</IconButton>
 									</Link>
 									<Link href="/search">
-										<IconButton style={{ color: `white` }}>
+										<IconButton
+											style={{ color: `white` }}
+											className={classes.removeHover}
+										>
 											<Typography>ค้นหา</Typography>
 										</IconButton>
 									</Link>
 									<Link href="/QnA">
-										<IconButton style={{ color: `white` }}>
+										<IconButton
+											style={{ color: `white` }}
+											className={classes.removeHover}
+										>
 											<Typography>ถาม-ตอบ</Typography>
 										</IconButton>
 									</Link>
 									{!loggedIn ? (
 										<>
 											<Link href="/signup">
-												<IconButton style={{ color: `white` }}>
+												<IconButton
+													style={{ color: `white` }}
+													className={classes.removeHover}
+												>
 													<Typography>สมัครสมาชิก</Typography>
 												</IconButton>
 											</Link>
 											<Link href="/signin">
-												<IconButton style={{ color: `white` }}>
+												<IconButton
+													style={{ color: `white` }}
+													className={classes.removeHover}
+												>
 													<Typography>เข้าสู่ระบบ</Typography>
 												</IconButton>
 											</Link>
@@ -295,7 +315,10 @@ export default function Navbar(props) {
 									) : (
 										<>
 											<Link href="/profilepage">
-												<IconButton style={{ color: `white` }}>
+												<IconButton
+													style={{ color: `white` }}
+													className={classes.removeHover}
+												>
 													<ProfileStyledBadge
 														overlap="circle"
 														anchorOrigin={{
@@ -313,21 +336,26 @@ export default function Navbar(props) {
 															alt=""
 														/>
 													</ProfileStyledBadge>
-													<Typography
-														style={{
-															color: "white",
-															textTransform: "capitalize",
-															paddingLeft: "5px",
-														}}
-													>
-														{user.displayName}
-													</Typography>
+													{loading ? (
+														<Skeleton variant="text" />
+													) : (
+														<Typography
+															style={{
+																color: "white",
+																textTransform: "capitalize",
+																paddingLeft: "5px",
+															}}
+														>
+															{user.displayName}
+														</Typography>
+													)}
 												</IconButton>
 											</Link>
 											<React.Fragment>
 												<IconButton
 													aria-label="cart"
 													onClick={handleClickPopover}
+													className={classes.removeHover}
 												>
 													<NotiStyledBadge
 														badgeContent={
@@ -363,67 +391,23 @@ export default function Navbar(props) {
 																<Avatar alt="Remy Sharp" />
 															</ListItemAvatar>
 															<ListItemText
-																primary="Brunch this weekend?"
+																primary="Let's enjoy."
 																secondary={
 																	<React.Fragment>
-																		<Typography
-																			component="span"
-																			variant="body2"
-																			className={classes.inline}
-																			color="textPrimary"
-																		>
-																			Ali Connors
-																		</Typography>
+																		<Link href="/termofservices">
+																			<a>
+																				<Typography
+																					component="span"
+																					variant="body2"
+																					className={classes.inline}
+																					color="textPrimary"
+																				>
+																					Term of service
+																				</Typography>
+																			</a>
+																		</Link>
 																		{
-																			" — I'll be in your neighborhood doing errands this…"
-																		}
-																	</React.Fragment>
-																}
-															/>
-														</ListItem>
-														<Divider variant="inset" component="li" />
-														<ListItem alignItems="flex-start">
-															<ListItemAvatar>
-																<Avatar alt="Travis Howard" />
-															</ListItemAvatar>
-															<ListItemText
-																primary="Summer BBQ"
-																secondary={
-																	<React.Fragment>
-																		<Typography
-																			component="span"
-																			variant="body2"
-																			className={classes.inline}
-																			color="textPrimary"
-																		>
-																			to Scott, Alex, Jennifer
-																		</Typography>
-																		{
-																			" — Wish I could come, but I'm out of town this…"
-																		}
-																	</React.Fragment>
-																}
-															/>
-														</ListItem>
-														<Divider variant="inset" component="li" />
-														<ListItem alignItems="flex-start">
-															<ListItemAvatar>
-																<Avatar alt="Cindy Baker" />
-															</ListItemAvatar>
-															<ListItemText
-																primary="Oui Oui"
-																secondary={
-																	<React.Fragment>
-																		<Typography
-																			component="span"
-																			variant="body2"
-																			className={classes.inline}
-																			color="textPrimary"
-																		>
-																			Sandra Adams
-																		</Typography>
-																		{
-																			" — Do you have Paris recommendations? Have you ever…"
+																			" — I'll be take you to our term of service page."
 																		}
 																	</React.Fragment>
 																}
@@ -435,6 +419,7 @@ export default function Navbar(props) {
 											<IconButton
 												onClick={handleClickOpenLogout}
 												style={{ color: `red` }}
+												className={classes.removeHover}
 											>
 												<Typography>ออกจากระบบ</Typography>
 											</IconButton>
@@ -442,14 +427,14 @@ export default function Navbar(props) {
 										</>
 									)}
 								</List>
-							</Hidden>
-							<Hidden mdUp>
+							{/* </Hidden> */}
+							{/* <Hidden mdUp>
 								<SideDrawer />
-							</Hidden>
+							</Hidden> */}
 						</Container>
 					</Toolbar>
 				</AppBar>
-			</HideOnScroll>
+			{/* </HideOnScroll> */}
 			<Toolbar id="back-to-top-anchor" />
 			<BackToTop>
 				<Fab color="secondary" size="large" aria-label="scroll back to top">
