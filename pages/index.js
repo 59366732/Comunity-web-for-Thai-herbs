@@ -131,19 +131,7 @@ function Home(props) {
 						)}
 					</div>
 				)}
-				{herbs.map((herb) => (
-					<div key={herb.id}>
-						<div>
-							<img src={herb.imgUrl} />
-						</div>
-						{/* <Link href="/herb/[id]" as={"/herb/" + herb.id}>
-							<a itemProp="hello">{herb.thaiName}</a>
-						</Link>
-						<div> เพิ่มโดย: &nbsp;{herb.displayName}</div> */}
-					</div>
-				))}
-				{/* <div style={{ paddingTop: "5px" }}>
-					
+				<div style={{ paddingTop: "5px" }}>
 					<Grid container spacing={2} direction="row">
 						{herbs.map((herb) => (
 							<Grid
@@ -269,7 +257,7 @@ function Home(props) {
 							</Grid>
 						))}
 					</Grid>
-				</div> */}
+				</div>
 			</div>
 		</div>
 	);

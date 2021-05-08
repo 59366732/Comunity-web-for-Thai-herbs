@@ -796,7 +796,8 @@ const Blog = (props) => {
 												<Grid item xs={12} sm={6} md={3}>
 													<img
 														component="img"
-														width="100%!important"
+														minWidth="auto!important"
+														// width="100%!important"
 														height="100%!important"
 														objectfit="contain"
 														src={ImgUrl}
@@ -818,7 +819,8 @@ const Blog = (props) => {
 												<Grid item xs={12} sm={6} md={3}>
 													<img
 														component="img"
-														width="1080px!important"
+														minWidth="auto!important"
+														// width="1080px!important"
 														height="auto!important"
 														objectfit="contain"
 														src={chemBondUrl}
@@ -837,7 +839,8 @@ const Blog = (props) => {
 												<Grid item xs={12} sm={6} md={3}>
 													<img
 														component="img"
-														width="1080px!important"
+														minWidth="auto!important"
+														// width="1080px!important"
 														height="auto!important"
 														objectfit="contain"
 														src={NMRUrl}

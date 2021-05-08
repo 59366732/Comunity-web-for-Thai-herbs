@@ -27,7 +27,7 @@ function MyApp({ Component, pageProps }) {
 	// }, []);
 	return (
 		<React.Fragment>
-			{/* <Header /> */}
+			<Header />
 			<CssBaseline />
 			<MuiThemeProvider theme={theme}>
 				<UserProvider>

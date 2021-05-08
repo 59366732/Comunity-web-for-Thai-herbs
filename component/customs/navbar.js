@@ -240,7 +240,7 @@ export default function Navbar(props) {
 
 	return (
 		<Box width={1}>
-			{/* <HideOnScroll> */}
+			<HideOnScroll>
 				<AppBar position="fixed">
 					<Toolbar component="nav">
 						<Container
@@ -262,7 +262,7 @@ export default function Navbar(props) {
 								เว็บชุมชนสมุนไพรไทย
 							</IconButton>
 
-							{/* <Hidden smDown> */}
+							<Hidden smDown>
 								<List
 									className="navbar-container"
 									component="nav"
@@ -427,14 +427,14 @@ export default function Navbar(props) {
 										</>
 									)}
 								</List>
-							{/* </Hidden> */}
-							{/* <Hidden mdUp>
+							</Hidden>
+							<Hidden mdUp>
 								<SideDrawer />
-							</Hidden> */}
+							</Hidden>
 						</Container>
 					</Toolbar>
 				</AppBar>
-			{/* </HideOnScroll> */}
+			</HideOnScroll>
 			<Toolbar id="back-to-top-anchor" />
 			<BackToTop>
 				<Fab color="secondary" size="large" aria-label="scroll back to top">
